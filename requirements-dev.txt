@@ -1,0 +1,15 @@
+# Shared development and CI tooling.
+#
+# Pinning convention:
+#   - Development tooling is pinned exactly (==) so lint and test results are
+#     reproducible across machines and CI, and so a new linter release cannot
+#     fail an unrelated commit.
+#   - Service runtime dependencies are pinned exactly in each service's own
+#     requirements.txt for the same reason, keeping Docker image builds
+#     deterministic.
+#
+# Install:  pip install -r requirements-dev.txt
+
+ruff==0.16.9
+pytest==9.1.1
+pytest-cov==7.1.0
