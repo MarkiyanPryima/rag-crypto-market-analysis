@@ -14,9 +14,12 @@ services:
       - "${POSTGRES_HOST_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # Runs only on an empty data directory. After the volume exists, schema
+      # Run only on an empty data directory. After the volume exists, schema
       # edits require `docker compose down -v` (destroys data) or a migration.
-      - ./bdd/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+      # Numeric prefixes fix the execution order explicitly — the entrypoint
+      # sorts filenames, so the seed must not sort ahead of the schema.
+      - ./bdd/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./bdd/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
     networks:
       - crypto_rag_network
     healthcheck:
