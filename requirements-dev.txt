@@ -13,3 +13,12 @@
 ruff==0.16.9
 pytest==9.1.1
 pytest-cov==7.1.0
+
+# Schema migrations. Chosen over Alembic because this project uses raw SQL with
+# no ORM: Alembic's autogenerate needs SQLAlchemy model metadata that does not
+# exist here, so it would reduce to a version-tracker around op.execute() while
+# still pulling in SQLAlchemy. yoyo's migrations are plain .sql files, matching
+# bdd/schema.sql. Neither reference project has migrations at all.
+yoyo-migrations==9.0.0
+# yoyo's database driver; also the driver the services use (psycopg 3).
+psycopg[binary]==3.3.6
