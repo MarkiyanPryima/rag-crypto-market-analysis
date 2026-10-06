@@ -124,3 +124,70 @@ CREATE INDEX IF NOT EXISTS news_sentiment_label_idx ON news (sentiment_label);
 CREATE INDEX IF NOT EXISTS news_token_effective_time_idx
     ON news (token_id, COALESCE(published_at, scraped_at) DESC)
     WHERE sentiment_label IS NOT NULL;
+
+-- Vector representations of articles, for similarity search in the RAG flow.
+--
+-- vector(1536) matches OpenAI text-embedding-3-small and must equal
+-- EMBEDDING_DIMENSIONS in .env. Swapping to a local model (e.g.
+-- all-MiniLM-L6-v2, 384 dims) is a schema change plus a full re-embed, so the
+-- choice is effectively fixed once collection starts.
+CREATE TABLE IF NOT EXISTS embeddings_news (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    news_id    UUID NOT NULL REFERENCES news(id) ON DELETE CASCADE,
+    embedding  vector(1536) NOT NULL,
+    model      VARCHAR(100) NOT NULL DEFAULT 'text-embedding-3-small',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    -- Not in the reference, and it prevents a real bug: the worker upserts
+    -- articles with ON CONFLICT (url) DO UPDATE, so a re-ingested article would
+    -- otherwise gain a second identical embedding row and retrieval would
+    -- return the same article twice, crowding out other results. Keyed on
+    -- model as well, so a future model's vectors coexist rather than collide.
+    CONSTRAINT embeddings_news_article_model_unique UNIQUE (news_id, model)
+);
+
+-- Approximate nearest-neighbour index for cosine similarity. Cosine because
+-- OpenAI embeddings are normalised and the retrieval query ranks by `<=>`.
+CREATE INDEX IF NOT EXISTS embeddings_news_embedding_idx
+    ON embeddings_news USING hnsw (embedding vector_cosine_ops);
+
+-- Generated market summaries.
+CREATE TABLE IF NOT EXISTS reports (
+    id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    token_id     UUID REFERENCES tokens(id) ON DELETE SET NULL,
+    symbols      TEXT[],
+    report_type  VARCHAR(20) NOT NULL DEFAULT 'daily',
+    content      TEXT NOT NULL,
+    generated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS reports_token_generated_idx
+    ON reports (token_id, generated_at DESC);
+CREATE INDEX IF NOT EXISTS reports_type_generated_idx
+    ON reports (report_type, generated_at DESC);
+-- GIN for array containment: WHERE symbols @> ARRAY['BTC','ETH']
+CREATE INDEX IF NOT EXISTS reports_symbols_idx ON reports USING gin (symbols);
+
+-- Market-wide sentiment: the Fear & Greed Index from alternative.me.
+CREATE TABLE IF NOT EXISTS fear_greed_index (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    value          INTEGER NOT NULL,
+    classification VARCHAR(20) NOT NULL,
+    -- The timestamp the API reports for the reading itself, distinct from when
+    -- we fetched it. The collector polls every 6 hours but the index only
+    -- updates daily, so without this the table would hold four copies of each
+    -- reading — the API's "last 30" history would span a week instead of a
+    -- month, and the daily join in the correlation analysis would need to
+    -- de-duplicate. UNIQUE lets the worker insert with ON CONFLICT DO NOTHING.
+    value_at       TIMESTAMPTZ NOT NULL,
+    fetched_at     TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT fear_greed_value_range CHECK (value BETWEEN 0 AND 100),
+    CONSTRAINT fear_greed_value_at_unique UNIQUE (value_at)
+);
+
+CREATE INDEX IF NOT EXISTS fear_greed_fetched_idx
+    ON fear_greed_index (fetched_at DESC);
+-- Ordering the history and the daily join both key on the reading's own time.
+CREATE INDEX IF NOT EXISTS fear_greed_value_at_idx
+    ON fear_greed_index (value_at DESC);
