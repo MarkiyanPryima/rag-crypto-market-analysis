@@ -19,6 +19,21 @@ class ConfigError(RuntimeError):
     """A required environment variable is missing or malformed."""
 
 
+def _optional_env(name: str) -> str | None:
+    """Read an optional setting, treating an unreplaced template value as unset.
+
+    .env is copied from .env.example, whose optional entries read
+    `your_coingecko_api_key`. That string is truthy, so a plain os.getenv sends
+    it as a credential and the request fails 401 — strictly worse than sending
+    no key at all, which the free tier accepts. Anything still carrying the
+    template prefix is therefore treated as absent.
+    """
+    value = (os.getenv(name) or "").strip()
+    if not value or value.startswith("your_"):
+        return None
+    return value
+
+
 def _int_env(name: str, default: int) -> int:
     """Read an integer setting, failing loudly rather than silently defaulting.
 
@@ -59,7 +74,7 @@ RUN_ONCE = bool(os.getenv("RUN_ONCE", "").strip())
 
 # --- External sources -------------------------------------------------------
 # Optional: raises the free-tier rate limit. Prices still work without it.
-COINGECKO_API_KEY = os.getenv("COINGECKO_API_KEY") or None
+COINGECKO_API_KEY = _optional_env("COINGECKO_API_KEY")
 FEAR_GREED_API_URL = os.getenv("FEAR_GREED_API_URL", "https://api.alternative.me/fng/")
 SCRAPER_SERVICE_URL = os.getenv("SCRAPER_SERVICE_URL", "http://scraper:8001/scrape")
 
