@@ -26,6 +26,6 @@ COPY collectors/ collectors/
 RUN useradd --create-home --uid 10001 collector
 USER collector
 
-# No CMD yet: the collector entry points arrive in later steps and each compose
-# service sets `command:` explicitly. A default pointing at a module that does
-# not exist would fail confusingly.
+# Default entry point. Each compose service overrides it with `command:`, so the
+# news and sentiment collectors share this image unchanged.
+CMD ["python", "-m", "collectors.price_collector"]

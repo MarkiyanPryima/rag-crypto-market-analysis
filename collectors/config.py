@@ -63,6 +63,35 @@ PRICES_QUEUE = "prices_queue"
 NEWS_QUEUE = "news_queue"
 SENTIMENT_QUEUE = "sentiment_queue"
 
+# --- Postgres (read-only) ---------------------------------------------------
+# Collectors read exactly one thing: the tracked token list. The worker remains
+# the only writer; collector connections are opened read-only so that invariant
+# is enforced by the database rather than merely documented.
+POSTGRES_HOST = os.getenv("POSTGRES_HOST", "postgres")
+POSTGRES_PORT = _int_env("POSTGRES_PORT", 5432)
+POSTGRES_DB = os.getenv("POSTGRES_DB", "crypto_rag")
+POSTGRES_USER = os.getenv("POSTGRES_USER", "crypto")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "")
+
+# Seconds to wait for a connection. Without a limit, a collector started before
+# Postgres is accepting connections blocks indefinitely instead of failing and
+# retrying.
+POSTGRES_CONNECT_TIMEOUT = _int_env("POSTGRES_CONNECT_TIMEOUT", 10)
+
+
+def postgres_conninfo() -> str:
+    """Build the connection string.
+
+    A function rather than a module constant so importing config never requires
+    database credentials — unit tests and CI import this module freely.
+    """
+    return (
+        f"host={POSTGRES_HOST} port={POSTGRES_PORT} dbname={POSTGRES_DB} "
+        f"user={POSTGRES_USER} password={POSTGRES_PASSWORD} "
+        f"connect_timeout={POSTGRES_CONNECT_TIMEOUT}"
+    )
+
+
 # --- Collection intervals (seconds) -----------------------------------------
 PRICE_FETCH_INTERVAL = _int_env("PRICE_FETCH_INTERVAL", 300)
 NEWS_FETCH_INTERVAL = _int_env("NEWS_FETCH_INTERVAL", 900)

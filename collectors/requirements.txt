@@ -11,6 +11,10 @@
 redis==8.1.0
 requests==2.34.2
 
+# Read-only Postgres access: collectors read the tracked token list so it is not
+# hardcoded. Same driver the worker and API use.
+psycopg[binary]==3.3.6
+
 # RSS parsing (news collector) and HTML cleanup of feed summaries.
 feedparser==6.0.14
 beautifulsoup4==4.15.0
