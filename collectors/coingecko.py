@@ -9,6 +9,7 @@ caller's job.
 """
 
 import logging
+from datetime import UTC, datetime
 from typing import Any
 
 import requests
@@ -143,6 +144,13 @@ def normalise(entry: dict[str, Any]) -> dict[str, Any] | None:
         # CoinGecko calls this total_volume, not volume_24h.
         "volume_24h": entry.get("total_volume"),
         "change_24h": change,
+        # Observation time stamped at fetch, NOT left to the database default.
+        # price_snapshots.scraped_at defaults to now() at INSERT time, so if the
+        # queue backs up — a worker restart, or simply not existing yet — every
+        # backlogged message would be written with the same timestamp and the
+        # price history would collapse into one instant. The worker must use
+        # this value rather than the column default.
+        "scraped_at": datetime.now(UTC).isoformat(),
         "source": "coingecko",
     }
 

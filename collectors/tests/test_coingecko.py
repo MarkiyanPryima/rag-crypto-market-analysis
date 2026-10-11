@@ -9,6 +9,7 @@ guessed payload would never have caught the change at all.
 
 import json
 import pathlib
+from datetime import UTC, datetime
 
 import pytest
 
@@ -40,6 +41,7 @@ def test_normalise_maps_every_column(markets):
     btc = next(e for e in markets if e["id"] == "bitcoin")
 
     result = coingecko.normalise(btc)
+    scraped_at = result.pop("scraped_at")
 
     assert result == {
         "symbol": "BTC",
@@ -50,6 +52,22 @@ def test_normalise_maps_every_column(markets):
         "change_24h": btc["price_change_percentage_24h"],
         "source": "coingecko",
     }
+    assert scraped_at
+
+
+def test_scraped_at_is_stamped_at_fetch_and_timezone_aware(markets):
+    """The worker must not fall back to the column default.
+
+    scraped_at defaults to now() at INSERT time, so a backlogged queue would
+    stamp every message with the drain time and flatten the price history into
+    one instant. Stamping at fetch keeps the observation time truthful however
+    long the message waits.
+    """
+    result = coingecko.normalise(markets[0])
+    stamped = datetime.fromisoformat(result["scraped_at"])
+
+    assert stamped.tzinfo is not None, "naive timestamp would be misread as local time"
+    assert abs((datetime.now(UTC) - stamped).total_seconds()) < 60
 
 
 def test_symbol_is_uppercased(markets):

@@ -37,6 +37,12 @@ services:
     container_name: crypto_rag_redis
     ports:
       - "${REDIS_PORT}:6379"
+    volumes:
+      # The image declares VOLUME /data, so without this an *anonymous* volume
+      # is created for the RDB snapshot — it works, but it is invisible and
+      # orphaned on every recreate. Naming it makes queue durability across a
+      # restart deliberate rather than accidental.
+      - redis_data:/data
     networks:
       - crypto_rag_network
     healthcheck:
@@ -46,8 +52,35 @@ services:
       retries: 10
     restart: unless-stopped
 
+  price_collector:
+    build:
+      # Context is the repository root, not ./collectors, so the code is copied
+      # as a package and `python -m collectors.X` resolves identically here and
+      # under pytest. See collectors/Dockerfile.
+      context: .
+      dockerfile: collectors/Dockerfile
+    # All three collectors share one built image; naming it explicitly means
+    # compose builds once rather than once per service.
+    image: crypto_rag_collectors
+    container_name: crypto_rag_price_collector
+    command: python -m collectors.price_collector
+    env_file:
+      - .env
+    depends_on:
+      # service_healthy, not a bare depends_on: the latter waits only for the
+      # container to start, so on a cold boot the collector would reach Postgres
+      # before it accepts connections and burn its first cycles retrying.
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - crypto_rag_network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
+  redis_data:
 
 networks:
   crypto_rag_network:
