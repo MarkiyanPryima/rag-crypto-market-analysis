@@ -59,3 +59,29 @@ def fetch_tracked_coin_ids() -> list[str]:
 
     logger.info("tracking %d coins: %s", len(coin_ids), ", ".join(coin_ids))
     return coin_ids
+
+
+@retry(
+    retry=retry_if_exception_type(psycopg.OperationalError),
+    stop=stop_after_attempt(5),
+    wait=wait_exponential(multiplier=1, min=1, max=20),
+    before_sleep=before_sleep_log(logger, logging.WARNING),
+    reraise=True,
+)
+def fetch_symbol_aliases() -> dict[str, str]:
+    """Map every lowercased name a coin goes by to its canonical symbol.
+
+    Built from tokens.symbol and tokens.name, so adding a coin to the database
+    makes it detectable in headlines with no code change.
+    """
+    with read_only_connection() as conn, conn.cursor() as cur:
+        cur.execute("SELECT symbol, name FROM tokens ORDER BY symbol")
+        rows = cur.fetchall()
+
+    aliases = {}
+    for symbol, name in rows:
+        aliases[symbol.lower()] = symbol
+        aliases[name.lower()] = symbol
+
+    logger.info("built %d aliases for %d coins", len(aliases), len(rows))
+    return aliases
