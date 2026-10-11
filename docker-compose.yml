@@ -99,6 +99,24 @@ services:
       - crypto_rag_network
     restart: unless-stopped
 
+  sentiment_collector:
+    image: crypto_rag_collectors
+    build:
+      context: .
+      dockerfile: collectors/Dockerfile
+    container_name: crypto_rag_sentiment_collector
+    command: python -m collectors.sentiment_collector
+    env_file:
+      - .env
+    depends_on:
+      # Redis only. This collector reads nothing from Postgres — the index is a
+      # single market-wide number, so there is no per-coin lookup to do.
+      redis:
+        condition: service_healthy
+    networks:
+      - crypto_rag_network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
