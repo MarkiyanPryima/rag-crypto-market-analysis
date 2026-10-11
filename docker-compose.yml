@@ -78,6 +78,27 @@ services:
       - crypto_rag_network
     restart: unless-stopped
 
+  news_collector:
+    # Same image as price_collector — compose builds it once and this service
+    # differs only by `command:`. That is the whole reason collectors/ is a
+    # single build context.
+    image: crypto_rag_collectors
+    build:
+      context: .
+      dockerfile: collectors/Dockerfile
+    container_name: crypto_rag_news_collector
+    command: python -m collectors.news_collector
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - crypto_rag_network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
