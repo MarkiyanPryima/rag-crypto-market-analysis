@@ -1,0 +1,20 @@
+# Runtime dependencies for the worker image.
+#
+# Pinned exactly so an upstream release cannot change behaviour between builds.
+# Versions match collectors/requirements.txt where the two overlap, so the same
+# library cannot behave differently on either side of the queue.
+
+# Postgres driver and connection pool. psycopg 3, not psycopg2 as in the
+# reference project: the pool replaces dead connections after a database
+# restart, where a raw long-lived connection would stay broken.
+psycopg[binary]==3.3.6
+psycopg-pool==3.3.3
+
+redis==8.1.0
+
+# Retry with backoff on transient database and Redis failures.
+tenacity==9.1.4
+
+# Reads .env when the worker is run directly on the host for testing. Inside
+# Docker the variables are already present and this is a no-op.
+python-dotenv==1.2.4
