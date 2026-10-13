@@ -22,4 +22,12 @@ COPY worker/ worker/
 RUN useradd --create-home --uid 10002 worker
 USER worker
 
+# Pre-download the embedding model into the runtime user's cache. Done after
+# USER so the cache lands in /home/worker, where the process can read it —
+# downloading as root would leave it unreadable and silently re-fetch on first
+# use. Also means the container needs no network access to embed.
+RUN python -c "\
+from fastembed import TextEmbedding; \
+TextEmbedding(model_name='sentence-transformers/all-MiniLM-L6-v2')"
+
 CMD ["python", "-m", "worker.worker"]

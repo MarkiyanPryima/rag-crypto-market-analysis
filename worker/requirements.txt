@@ -18,3 +18,10 @@ tenacity==9.1.4
 # Reads .env when the worker is run directly on the host for testing. Inside
 # Docker the variables are already present and this is a no-op.
 python-dotenv==1.2.4
+
+# Per-article sentiment: lexicon classifier, runs locally, no API calls.
+vaderSentiment==3.3.2
+
+# Local text embeddings through ONNX. Chosen over sentence-transformers to
+# avoid pulling in PyTorch (~2 GB) for a 90 MB model.
+fastembed==0.9.0

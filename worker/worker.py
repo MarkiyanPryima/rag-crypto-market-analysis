@@ -15,16 +15,25 @@ import logging
 import os
 import sys
 
-from worker import db, ingest_prices, queue_consumer
-from worker.config import PRICES_QUEUE
+from worker import (
+    db,
+    ingest_market_sentiment,
+    ingest_news,
+    ingest_prices,
+    queue_consumer,
+)
+from worker.config import NEWS_QUEUE, PRICES_QUEUE, SENTIMENT_QUEUE
 from worker.logging_setup import configure
 
 logger = logging.getLogger(__name__)
 
-# news_queue and sentiment_queue are intentionally absent until their handlers
-# exist — an unlistened queue keeps its messages, a placeholder would eat them.
+# All three queues now have handlers. A queue must only appear here once its
+# handler can actually store the payload: BLPOP removes a message as it reads
+# it, so listening without ingesting destroys collected data.
 HANDLERS: dict[str, queue_consumer.Handler] = {
     PRICES_QUEUE: ingest_prices.handle,
+    NEWS_QUEUE: ingest_news.handle,
+    SENTIMENT_QUEUE: ingest_market_sentiment.handle,
 }
 
 
