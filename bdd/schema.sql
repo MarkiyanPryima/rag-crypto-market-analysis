@@ -133,15 +133,21 @@ CREATE INDEX IF NOT EXISTS news_token_effective_time_idx
 
 -- Vector representations of articles, for similarity search in the RAG flow.
 --
--- vector(1536) matches OpenAI text-embedding-3-small and must equal
--- EMBEDDING_DIMENSIONS in .env. Swapping to a local model (e.g.
--- all-MiniLM-L6-v2, 384 dims) is a schema change plus a full re-embed, so the
--- choice is effectively fixed once collection starts.
+-- vector(384) matches all-MiniLM-L6-v2, which runs locally: no API key, no
+-- per-article cost, and identical output on every run — retrieval results stay
+-- reproducible when the work is reviewed. The trade-off is lower retrieval
+-- quality than OpenAI's text-embedding-3-small (1536), stated as a limitation.
+--
+-- EMBEDDING_DIMENSIONS in .env must equal this width. Changing it after
+-- ingestion begins means re-embedding the whole corpus, because a stored
+-- vector cannot be converted between dimensionalities — see
+-- bdd/migrations/20261013_01_embedding-dimensions-384.sql, which made exactly
+-- this change while the table was still empty.
 CREATE TABLE IF NOT EXISTS embeddings_news (
     id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     news_id    UUID NOT NULL REFERENCES news(id) ON DELETE CASCADE,
-    embedding  vector(1536) NOT NULL,
-    model      VARCHAR(100) NOT NULL DEFAULT 'text-embedding-3-small',
+    embedding  vector(384) NOT NULL,
+    model      VARCHAR(100) NOT NULL DEFAULT 'all-MiniLM-L6-v2',
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
 
     -- Not in the reference, and it prevents a real bug: the worker upserts
