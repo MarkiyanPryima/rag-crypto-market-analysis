@@ -117,6 +117,27 @@ services:
       - crypto_rag_network
     restart: unless-stopped
 
+  worker:
+    build:
+      context: .
+      dockerfile: worker/Dockerfile
+    image: crypto_rag_worker
+    container_name: crypto_rag_worker
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - crypto_rag_network
+    # stop_grace_period gives the loop time to finish the message in flight
+    # after SIGTERM. The default is 10s, and a BLPOP can be mid-timeout, so a
+    # little more headroom avoids a SIGKILL during a transaction.
+    stop_grace_period: 30s
+    restart: unless-stopped
+
 volumes:
   postgres_data:
   redis_data:
