@@ -18,6 +18,31 @@ test:
 test-unit:
 	pytest -m "not integration"
 
+# Integration tests against a DISPOSABLE database.
+#
+# These tests DELETE table contents to start from a known state. Pointing them
+# at the working database destroys collected data — that is not hypothetical,
+# it cost 2520 price snapshots on 13 Oct. conftest.py now skips them unless
+# POSTGRES_DB contains "test", and this target supplies such a database,
+# recreating it each run so results never depend on leftovers.
+TEST_DB = crypto_rag_test
+
+test-integration:
+	@set -a && . ./.env && set +a && \
+	docker exec $(PG_CONTAINER) psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -q \
+		-c "DROP DATABASE IF EXISTS $(TEST_DB)" \
+		-c "CREATE DATABASE $(TEST_DB)" && \
+	docker exec -i $(PG_CONTAINER) psql -U "$$POSTGRES_USER" -d $(TEST_DB) -q < bdd/schema.sql && \
+	docker exec -i $(PG_CONTAINER) psql -U "$$POSTGRES_USER" -d $(TEST_DB) -q < bdd/seed.sql && \
+	POSTGRES_HOST=localhost POSTGRES_PORT="$$POSTGRES_HOST_PORT" POSTGRES_DB=$(TEST_DB) \
+		pytest -q; \
+	status=$$?; \
+	docker exec $(PG_CONTAINER) psql -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -q \
+		-c "DROP DATABASE IF EXISTS $(TEST_DB)"; \
+	exit $$status
+
+PG_CONTAINER = crypto_rag_postgres
+
 # --- Schema migrations ------------------------------------------------------
 #
 # There is deliberately no yoyo.ini: the connection URL contains the password,
