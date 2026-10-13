@@ -22,6 +22,4 @@ COPY worker/ worker/
 RUN useradd --create-home --uid 10002 worker
 USER worker
 
-# No CMD yet: the consumer loop arrives in the next step, and the compose
-# service will set `command:` explicitly. A default pointing at a module that
-# does not exist would fail confusingly.
+CMD ["python", "-m", "worker.worker"]
