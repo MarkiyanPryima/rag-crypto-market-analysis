@@ -1,147 +1,28 @@
+# A separate compose project from the v0 stack (tag v0-microservices), so the
+# old collectors keep running untouched until this system replaces them.
+name: crypto_rag_v2
+
 services:
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: crypto_rag_postgres
-    env_file:
-      - .env
+  db:
+    # TimescaleDB HA image: ships timescaledb and pgvector in one image.
+    image: timescale/timescaledb-ha:pg17.11-ts2.31.0
+    container_name: crypto_rag_v2_db
     environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
-      # Host mapping is a separate variable so a local Postgres already holding
-      # 5432 does not block the stack.
-      - "${POSTGRES_HOST_PORT}:5432"
+      - "${DB_HOST_PORT:-5433}:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      # Run only on an empty data directory. After the volume exists, schema
-      # edits require `docker compose down -v` (destroys data) or a migration.
-      # Numeric prefixes fix the execution order explicitly — the entrypoint
-      # sorts filenames, so the seed must not sort ahead of the schema.
-      - ./bdd/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
-      - ./bdd/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
-    networks:
-      - crypto_rag_network
+      # The HA image keeps PGDATA under /home/postgres/pgdata.
+      - db_data:/home/postgres/pgdata
     healthcheck:
-      # Dependents wait on this rather than on bare `depends_on`, which only
-      # waits for the container to start, not for Postgres to accept queries.
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
-      retries: 10
-      start_period: 10s
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    container_name: crypto_rag_redis
-    ports:
-      - "${REDIS_PORT}:6379"
-    volumes:
-      # The image declares VOLUME /data, so without this an *anonymous* volume
-      # is created for the RDB snapshot — it works, but it is invisible and
-      # orphaned on every recreate. Naming it makes queue durability across a
-      # restart deliberate rather than accidental.
-      - redis_data:/data
-    networks:
-      - crypto_rag_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-    restart: unless-stopped
-
-  price_collector:
-    build:
-      # Context is the repository root, not ./collectors, so the code is copied
-      # as a package and `python -m collectors.X` resolves identically here and
-      # under pytest. See collectors/Dockerfile.
-      context: .
-      dockerfile: collectors/Dockerfile
-    # All three collectors share one built image; naming it explicitly means
-    # compose builds once rather than once per service.
-    image: crypto_rag_collectors
-    container_name: crypto_rag_price_collector
-    command: python -m collectors.price_collector
-    env_file:
-      - .env
-    depends_on:
-      # service_healthy, not a bare depends_on: the latter waits only for the
-      # container to start, so on a cold boot the collector would reach Postgres
-      # before it accepts connections and burn its first cycles retrying.
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - crypto_rag_network
-    restart: unless-stopped
-
-  news_collector:
-    # Same image as price_collector — compose builds it once and this service
-    # differs only by `command:`. That is the whole reason collectors/ is a
-    # single build context.
-    image: crypto_rag_collectors
-    build:
-      context: .
-      dockerfile: collectors/Dockerfile
-    container_name: crypto_rag_news_collector
-    command: python -m collectors.news_collector
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - crypto_rag_network
-    restart: unless-stopped
-
-  sentiment_collector:
-    image: crypto_rag_collectors
-    build:
-      context: .
-      dockerfile: collectors/Dockerfile
-    container_name: crypto_rag_sentiment_collector
-    command: python -m collectors.sentiment_collector
-    env_file:
-      - .env
-    depends_on:
-      # Redis only. This collector reads nothing from Postgres — the index is a
-      # single market-wide number, so there is no per-coin lookup to do.
-      redis:
-        condition: service_healthy
-    networks:
-      - crypto_rag_network
-    restart: unless-stopped
-
-  worker:
-    build:
-      context: .
-      dockerfile: worker/Dockerfile
-    image: crypto_rag_worker
-    container_name: crypto_rag_worker
-    env_file:
-      - .env
-    depends_on:
-      postgres:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - crypto_rag_network
-    # stop_grace_period gives the loop time to finish the message in flight
-    # after SIGTERM. The default is 10s, and a BLPOP can be mid-timeout, so a
-    # little more headroom avoids a SIGKILL during a transaction.
-    stop_grace_period: 30s
+      retries: 20
+      start_period: 15s
     restart: unless-stopped
 
 volumes:
-  postgres_data:
-  redis_data:
-
-networks:
-  crypto_rag_network:
-    driver: bridge
+  db_data:

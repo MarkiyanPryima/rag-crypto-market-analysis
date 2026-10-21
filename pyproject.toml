@@ -1,57 +1,73 @@
-# Tooling configuration only.
-#
-# This repository is a multi-service application, not an installable package, so
-# there is deliberately no [project] or [build-system] table. Runtime dependencies
-# live in each service's own requirements.txt (api/, collectors/, worker/,
-# report_generator/); shared development tooling lives in requirements-dev.txt.
+[project]
+name = "crypto-rag"
+version = "0.1.0"
+description = "Hybrid RAG system for BTC/ETH market analysis (master's thesis)"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "alembic==1.20.0",
+    "apscheduler==3.11.3",
+    "arch==8.0.0",
+    "beautifulsoup4==4.15.0",
+    "fastapi==0.158.2",
+    "feedparser==6.0.14",
+    "httpx==0.28.1",
+    "langchain-core==1.6.12",
+    "langchain-openai==1.7.2",
+    "langgraph==1.2.16",
+    "lightgbm==4.7.0",
+    "lxml==6.1.3",
+    "numpy==2.5.4",
+    "openai==3.36.0",
+    "pandas==3.0.6",
+    "pgvector==0.5.1",
+    "psycopg[binary]==3.3.6",
+    "pyarrow==26.0.0",
+    "pydantic==2.14.1",
+    "pydantic-settings==2.16.1",
+    "scikit-learn==1.9.1",
+    "sqlalchemy==2.1.6",
+    "tenacity==9.2.1",
+    "tiktoken==0.14.0",
+    "uvicorn[standard]==0.54.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["crypto_rag"]
+
+[dependency-groups]
+dev = [
+    "pre-commit==4.7.0",
+    "pytest==9.1.1",
+    "pytest-cov==7.1.0",
+    "ruff==0.17.1",
+]
 
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-src = ["api", "collectors", "worker", "report_generator"]
-extend-exclude = ["frontend", "venv", ".venv"]
+src = ["crypto_rag", "tests"]
+# Legacy v0 services stay on disk until the old stack is retired (see docs/decisions.md).
+extend-exclude = ["collectors", "worker", "bdd", "ui", "migrations/versions"]
 
 [tool.ruff.lint]
-select = [
-    "E",    # pycodestyle errors
-    "W",    # pycodestyle warnings
-    "F",    # pyflakes
-    "I",    # isort — import ordering
-    "B",    # bugbear — likely bugs and design problems
-    "C4",   # comprehensions
-    "UP",   # pyupgrade — modern syntax for the target version
-    "SIM",  # simplify
-    "RET",  # return-statement hygiene
-    "PTH",  # prefer pathlib over os.path
-    "DTZ",  # timezone-aware datetimes
-    "T20",  # no print() — this project logs
-    "S",    # bandit — security checks
-    "RUF",  # ruff-specific rules
-]
-ignore = [
-    "E501",  # line length is enforced by the formatter, not the linter
-]
+select = ["E", "W", "F", "I", "B", "C4", "UP", "SIM", "RET", "PTH", "DTZ", "T20", "S", "RUF"]
+ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
-# Assertions are the point of a test, and fixtures legitimately go unused.
-"**/tests/**" = ["S101", "ARG001", "ARG002"]
+"tests/**" = ["S101", "ARG001", "ARG002"]
+"evaluation/**" = ["T20"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["api", "collectors", "worker", "report_generator"]
-
-[tool.ruff.format]
-quote-style = "double"
-indent-style = "space"
+known-first-party = ["crypto_rag"]
 
 [tool.pytest.ini_options]
 minversion = "9.0"
-testpaths = ["api", "collectors", "worker", "report_generator"]
-python_files = ["test_*.py"]
-addopts = [
-    "-ra",              # summarise everything except passes
-    "--strict-markers", # unknown markers are errors, not silent no-ops
-    "--strict-config",
-]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers", "--strict-config"]
 markers = [
-    "integration: requires a live Postgres or Redis (deselect with -m 'not integration')",
+    "integration: requires the test Postgres database (TEST_DATABASE_URL)",
 ]
