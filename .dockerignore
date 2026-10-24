@@ -1,33 +1,27 @@
-# The collector image builds from the repository root so its code can be copied
-# as a package, which means the whole tree would otherwise be sent to the Docker
-# daemon as build context. Excluding the heavy and the secret keeps builds fast
-# and keeps credentials out of image layers.
-
+# Build context is the repository root; keep secrets and heavy dirs out of it.
 .git
-.gitignore
-
-# Secrets — must never reach a build context, let alone an image layer.
 .env
 .env.*
 !.env.example
 
-# Caches and build artefacts
 **/__pycache__
 **/*.py[cod]
 .ruff_cache
 .pytest_cache
 .coverage
 htmlcov
-
-# Virtual environments
-venv
 .venv
+venv
 
-# Frontend dependencies and builds; the frontend has its own Dockerfile.
-frontend/node_modules
-frontend/dist
-frontend/build
+# Local data, logs and evaluation outputs
+data
+evaluation/results
 
-# Documentation and local notes
-*.md
-LICENSE
+# UI dependencies and builds (the UI image installs its own)
+ui/node_modules
+ui/dist
+
+# Legacy v0 services
+collectors
+worker
+bdd

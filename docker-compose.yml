@@ -1,6 +1,28 @@
 # A separate compose project from the v0 stack (tag v0-microservices), so the
 # old collectors keep running untouched until this system replaces them.
+#
+# Five long-running processes (db, collector, forecaster, api, ui) plus a
+# one-shot `migrate` that applies Alembic migrations before the others start.
 name: crypto_rag_v2
+
+x-app: &app
+  image: crypto_rag_app:latest
+  build:
+    context: .
+    dockerfile: Dockerfile
+  env_file: .env
+  environment:
+    # .env points at localhost:5433 for host use; inside compose it is db:5432.
+    DATABASE_URL: postgresql+psycopg://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+  restart: unless-stopped
+
+x-scheduler-health: &scheduler-health
+  # Fails if the scheduler has not completed a job (or heartbeat) in 20 minutes.
+  test: ["CMD", "python", "-c", "import os,sys,time; sys.exit(time.time() - os.path.getmtime('/tmp/crypto_rag_heartbeat') > 1200)"]
+  interval: 60s
+  timeout: 5s
+  retries: 3
+  start_period: 60s
 
 services:
   db:
@@ -22,6 +44,66 @@ services:
       timeout: 5s
       retries: 20
       start_period: 15s
+    restart: unless-stopped
+
+  migrate:
+    <<: *app
+    container_name: crypto_rag_v2_migrate
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  collector:
+    <<: *app
+    container_name: crypto_rag_v2_collector
+    command: ["python", "-m", "crypto_rag.scheduler.jobs", "collector"]
+    healthcheck: *scheduler-health
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  forecaster:
+    <<: *app
+    container_name: crypto_rag_v2_forecaster
+    command: ["python", "-m", "crypto_rag.scheduler.jobs", "forecaster"]
+    healthcheck: *scheduler-health
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  api:
+    <<: *app
+    container_name: crypto_rag_v2_api
+    command: ["uvicorn", "crypto_rag.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports:
+      - "${API_HOST_PORT:-8001}:8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  ui:
+    build:
+      context: ui
+    image: crypto_rag_ui:latest
+    container_name: crypto_rag_v2_ui
+    ports:
+      - "${UI_HOST_PORT:-8090}:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      api:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

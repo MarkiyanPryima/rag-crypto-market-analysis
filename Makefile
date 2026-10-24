@@ -5,8 +5,9 @@ ENV = set -a && . ./.env && set +a &&
 
 .PHONY: up down logs migrate downgrade test test-unit lint format psql
 
+# Whole system: db, migrate, collector, forecaster, api (localhost:8001), ui (localhost:8090).
 up:
-	docker compose up -d --wait
+	docker compose up -d --build --wait
 
 down:
 	docker compose down
@@ -37,3 +38,15 @@ format:
 
 psql:
 	@$(ENV) docker exec -it crypto_rag_v2_db psql -U "$$DB_USER" -d "$$DB_NAME"
+
+# --- Full stack ---------------------------------------------------------------
+.PHONY: build ps ui-dev
+
+build:
+	docker compose build
+
+ps:
+	docker compose ps
+
+ui-dev:
+	npm --prefix ui run dev
