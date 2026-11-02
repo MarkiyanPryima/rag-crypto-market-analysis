@@ -12,6 +12,7 @@ and clamps any model-supplied end time to it.
 
 import json
 import logging
+import re
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -222,6 +223,33 @@ def _trace(state: AgentState, event: str, **data: Any) -> list[dict[str, Any]]:
     return [*state.get("trace", []), {"event": event, "at": datetime.now(UTC).isoformat(), **data}]
 
 
+# (language, unsupported?) -> text. The disclaimer is appended in Ukrainian in every case.
+REFUSALS = {
+    ("uk", True): (
+        "Я можу пояснювати рухи ціни BTC та ETH, показувати схожі епізоди з історії "
+        "та денні прогнози волатильності й імовірності зростання. Це запитання виходить "
+        "за ці межі. Спробуйте, наприклад: «Чому BTC впав за останню добу?» або "
+        "«Який прогноз волатильності ETH на завтра?»"
+    ),
+    ("en", True): (
+        "I can explain BTC and ETH price moves, show similar episodes from history, and give "
+        "daily forecasts of volatility and the chance of a rise. This question is outside that "
+        'scope. Try, for example: "Why did BTC fall over the last 24 hours?" or '
+        '"What is the volatility forecast for ETH tomorrow?"'
+    ),
+    ("uk", False): (
+        "Не вдалося сформувати відповідь, що проходить автоматичну перевірку фактів, "
+        "тож я її не показую. Проблеми:\n{feedback}\n\n"
+        "Спробуйте звузити запитання (один актив, конкретне вікно часу)."
+    ),
+    ("en", False): (
+        "I could not produce an answer that passes the automatic fact check, so I am not "
+        "showing it. Problems:\n{feedback}\n\n"
+        "Try narrowing the question (one asset, a specific time window)."
+    ),
+}
+
+
 def build_graph(deps: AgentDeps) -> Any:
     def router(state: AgentState) -> dict[str, Any]:
         structured = deps.router_llm.with_structured_output(RouterOut, include_raw=True)
@@ -286,7 +314,8 @@ def build_graph(deps: AgentDeps) -> Any:
             _log_llm(deps, "generate", deps.generator_model_name, ai)
             messages.append(ai)
             if not ai.tool_calls:
-                draft = ai.content if isinstance(ai.content, str) else str(ai.content)
+                # Responses API returns content as a list of blocks; .text joins the text parts.
+                draft = ai.text
                 break
             for call in ai.tool_calls:
                 started = time.perf_counter()
@@ -335,20 +364,10 @@ def build_graph(deps: AgentDeps) -> Any:
         return update
 
     def refuse(state: AgentState) -> dict[str, Any]:
-        if state.get("intent") == "unsupported":
-            text = (
-                "Я можу пояснювати рухи ціни BTC та ETH, показувати схожі епізоди з історії "
-                "та денні прогнози волатильності й імовірності зростання. Це запитання виходить "
-                "за ці межі. Спробуйте, наприклад: «Чому BTC впав за останню добу?» або "
-                "«Який прогноз волатильності ETH на завтра?»"
-            )
-        else:
-            text = (
-                "Не вдалося сформувати відповідь, що проходить автоматичну перевірку фактів, "
-                "тож я її не показую. Проблеми:\n"
-                + state.get("verification", {}).get("feedback", "")
-                + "\n\nСпробуйте звузити запитання (один актив, конкретне вікно часу)."
-            )
+        ukrainian = bool(re.search(r"[А-Яа-яІіЇїЄєҐґ]", state.get("question", "")))
+        feedback = state.get("verification", {}).get("feedback", "")
+        text = REFUSALS[("uk" if ukrainian else "en", state.get("intent") == "unsupported")]
+        text = text.format(feedback=feedback)
         return {
             "answer": f"{text}\n\n{DISCLAIMER}",
             "refused": True,
@@ -439,11 +458,20 @@ def default_deps(engine: Engine) -> AgentDeps:
 
     s = get_settings()
     key = s.openai_api_key.get_secret_value()
+    # Responses API: the gpt-5.6 models refuse function tools on /v1/chat/completions.
     router = ChatOpenAI(
-        model=s.router_model, api_key=key, temperature=s.llm_temperature, max_retries=3
+        model=s.router_model,
+        api_key=key,
+        temperature=s.llm_temperature,
+        max_retries=3,
+        use_responses_api=True,
     )
     generator = ChatOpenAI(
-        model=s.generator_model, api_key=key, temperature=s.llm_temperature, max_retries=3
+        model=s.generator_model,
+        api_key=key,
+        temperature=s.llm_temperature,
+        max_retries=3,
+        use_responses_api=True,
     )
     return AgentDeps(
         engine, router, generator, openai_query_embedder(engine), s.router_model, s.generator_model

@@ -75,3 +75,60 @@ def test_gdelt_never_overwrites_rss_and_dedupes(engine):
     assert row.title == "RSS title"
     assert row.published_at == datetime(2026, 10, 19, 9, 0, tzinfo=UTC)
     assert row.raw["gdelt_seen"].startswith("2026-10-19T12:30")
+
+
+@pytest.mark.parametrize(
+    ("raw", "tidy"),
+    [
+        (
+            "Why is SHIB up 35 %? Shiba Inu rockets higher as S . Korean traders lead",
+            "Why is SHIB up 35%? Shiba Inu rockets higher as S. Korean traders lead",
+        ),
+        (
+            "Morgan Stanley debuts ether ( ETH ) and solana ( SOL ) ETPs",
+            "Morgan Stanley debuts ether (ETH) and solana (SOL) ETPs",
+        ),
+        (
+            "Bitget hackers move $ 4 million into Zcash , making funds harder to trace",
+            "Bitget hackers move $4 million into Zcash, making funds harder to trace",
+        ),
+        ("Bitcoin ' s rally fades", "Bitcoin's rally fades"),
+        ("Clean title already", "Clean title already"),
+        ("U.S. SEC delays ETF ruling", "U.S. SEC delays ETF ruling"),
+    ],
+)
+def test_tidy_title(raw, tidy):
+    assert gdelt.tidy_title(raw) == tidy
+
+
+def test_raw_title_is_kept():
+    row = gdelt.make_row(
+        "https://www.coindesk.com/markets/2026/07/28/x",
+        "ether ( ETH )",
+        datetime(2026, 7, 28, tzinfo=UTC),
+        "gkg",
+    )
+    assert row["title"] == "ether (ETH)"
+    assert row["raw"]["gdelt_title"] == "ether ( ETH )"
+
+
+@pytest.mark.integration
+def test_tidy_stored_titles_keeps_original(engine):
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM articles WHERE id = 'coindesk:markets/2026/07/28/old-row'"))
+        conn.execute(text(
+            "INSERT INTO articles (id, source, channel, url, title, published_at, raw, content_hash) "
+            "VALUES ('coindesk:markets/2026/07/28/old-row', 'coindesk', 'gdelt', 'https://www.coindesk.com/markets/2026/07/28/old-row', "
+            "'ether ( ETH ) up 3 %', now(), '{}', 'old')"
+        ))  # fmt: skip
+    assert gdelt.tidy_stored_titles(engine) >= 1
+    with engine.connect() as conn:
+        row = conn.execute(
+            text(
+                "SELECT title, raw, content_hash FROM articles WHERE id = 'coindesk:markets/2026/07/28/old-row'"
+            )
+        ).one()
+    assert row.title == "ether (ETH) up 3%"
+    assert row.raw["gdelt_title"] == "ether ( ETH ) up 3 %"
+    assert row.content_hash != "old"
+    assert gdelt.tidy_stored_titles(engine) == 0  # idempotent

@@ -25,8 +25,10 @@ Rules:
    (no sums, differences or conversions). Write dates as YYYY-MM-DD and times as HH:MM.
 2. Every statement about news must cite its chunk id, e.g. [c_2]. Use only retrieved items.
 3. A news item and a price move happening together is a coincidence in time, not a proven
-   cause. Use wording such as "coincided with", "preceded"; never "caused". Name as a likely
-   cause only news published BEFORE the start of the move (the sharpest hour).
+   cause. Use wording such as "coincided with", "preceded"; never "caused".
+   Under "## Ймовірні причини" cite ONLY news published BEFORE the start of the sharpest
+   hour reported by get_market_stats. News published after that moment is coverage of the
+   move, not a candidate cause: mention it under "## Що сталося" or leave it out.
 4. Structure (Markdown headings, in this order; skip a section only if there is no data):
    ## Що сталося
    ## Ймовірні причини

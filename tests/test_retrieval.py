@@ -104,3 +104,17 @@ def test_langchain_retriever_uses_fixed_as_of(engine, corpus):
     )
     docs = r.invoke("bitcoin ETF inflows")
     assert docs and "r:new" not in {d.metadata["article_id"] for d in docs}
+
+
+def test_fts_query_or_joins_words_and_keeps_phrases():
+    from crypto_rag.retrieval.hybrid import fts_query
+
+    assert fts_query("Bitcoin ETF inflows") == "Bitcoin or ETF or inflows"
+    assert fts_query('"spot ETF" approval, SEC') == '"spot ETF" or approval or SEC'
+
+
+def test_long_model_query_still_hits_full_text(engine, corpus):
+    # Real failure: an all-terms AND query returned no full-text candidates at all.
+    q = "Bitcoin BTC market price macro regulation institutional flows November 2026"
+    hits = search_news(engine, q, AS_OF, window_hours=1000, with_reaction=False)
+    assert any(h.rank_fts for h in hits)

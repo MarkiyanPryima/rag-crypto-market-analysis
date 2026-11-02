@@ -141,6 +141,8 @@ def search_pages(
 
 def fetch(engine: Engine, from_date: date, use_date: str = "first-publication") -> dict[str, int]:
     s = get_settings()
+    if not s.guardian_tags:
+        raise RuntimeError("GUARDIAN_TAGS is empty: confirm tags from `guardian tags` first")
     start = s.start_date
     stats = {"total": 0, "saved": 0, "new": 0, "skipped_before_start": 0}
     with PoliteClient(min_interval=1.1) as client:

@@ -82,3 +82,47 @@ def test_rounding_rules():
     assert number_matches("3%", -3.214, 2)
     assert not number_matches("3.214%", -3.214, 2)  # more precise than the metric
     assert number_matches("84,416.47", 84416.47, 2)
+
+
+def test_ukrainian_durations_are_not_numbers():
+    text = GOOD.replace(
+        "over the last 24 h", "порівняно з 30-денного середнього та 48-годинний епізод за 7 днів"
+    )
+    assert verify(text, _results(), AS_OF).ok
+
+
+def test_later_news_outside_causes_section_passes():
+    # Real case (query 1): post-move coverage described as such, placed under "Що сталося".
+    text = GOOD.replace(
+        "The sharpest hour moved -2.05% [m3] at 03:00 UTC on 2025-09-10.",
+        "The sharpest hour moved -2.05% [m3] at 03:00 UTC on 2025-09-10. Later coverage reported the slide [c_2].",
+    )
+    assert verify(text, _results(), AS_OF).ok
+
+
+def test_cause_feedback_says_where_to_move_it():
+    bad = GOOD.replace("delayed its decision on 3 spot ETF applications [c_1]", "slid [c_2]")
+    (err,) = verify(bad, _results(), AS_OF).errors
+    assert "Що сталося" in err.message
+
+
+def test_news_figure_cited_later_in_paragraph_passes():
+    # Real case (query 10): "понад 6 млрд доларів" quoted from news, [c_1] in the next sentence.
+    res = _results()
+    res["search_news"][0][0]["text"] = (
+        "The FBI tied the theft of more than $6bn in crypto assets to a North Korean group."
+    )
+    text = GOOD.replace(
+        "In time this coincided with news that the SEC delayed its decision on 3 spot ETF applications [c_1].",
+        "Перед рухом повідомили про викрадення понад 6 млрд доларів. Це передувало руху [c_1].",
+    )
+    assert verify(text, res, AS_OF).ok
+
+
+def test_uncited_news_figure_still_fails_with_actionable_hint():
+    text = GOOD.replace(
+        "In time this coincided with news that the SEC delayed its decision on 3 spot ETF applications [c_1].",
+        "Перед рухом повідомили про викрадення понад 6 млрд доларів.",
+    )
+    errors = verify(text, _results(), AS_OF).errors
+    assert any(e.token == "6" and "same paragraph" in e.message for e in errors)

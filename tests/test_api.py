@@ -4,6 +4,7 @@ from datetime import timedelta
 import pytest
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage
+from sqlalchemy import text
 
 from crypto_rag.agent.graph import AgentDeps
 from crypto_rag.agent.state import RouterOut
@@ -107,3 +108,20 @@ def test_ask_without_key_is_503(monkeypatch):
     monkeypatch.setattr(get_settings(), "openai_api_key", SecretStr(""))
     client = TestClient(app)
     assert client.post("/ask", json={"question": "BTC?"}).status_code == 503
+
+
+def test_split_sections_accepts_english_headings():
+    s = split_sections("## What happened\nA [m1]\n\n## Similar episodes\nB\n\n## Forecast\nC")
+    assert set(s) == {"what_happened", "similar_episodes", "forecast"}
+
+
+@pytest.mark.integration
+def test_stats_numbers_are_json_numbers(client, engine):
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                "INSERT INTO llm_usage (purpose, model, input_tokens, output_tokens, cost_usd) VALUES ('t', 'm', 10, 1, 0.00123)"
+            )
+        )
+    usage = client.get("/stats").json()["llm_usage"]
+    assert all(isinstance(u["cost_usd"], float) for u in usage if u["cost_usd"] is not None)

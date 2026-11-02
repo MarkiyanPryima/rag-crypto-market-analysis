@@ -64,10 +64,10 @@ def parse_structured(
     schema: type,
     client: OpenAI | None = None,
 ) -> Any:
-    """Structured output via the Responses API, at minimal temperature.
+    """Structured output via the Responses API.
 
-    Some reasoning models reject `temperature`; then the call is repeated
-    without it and the fallback is logged.
+    `temperature` is sent only if configured; a model that rejects it gets the
+    call repeated without it, and the fallback is logged.
     """
     client = client or get_client()
     kwargs: dict[str, Any] = {
@@ -75,8 +75,9 @@ def parse_structured(
         "instructions": instructions,
         "input": user_input,
         "text_format": schema,
-        "temperature": 0,
     }
+    if get_settings().llm_temperature is not None:
+        kwargs["temperature"] = get_settings().llm_temperature
     try:
         response = client.responses.parse(**kwargs)
     except BadRequestError as exc:

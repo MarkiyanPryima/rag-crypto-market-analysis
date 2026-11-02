@@ -88,7 +88,7 @@ def test_forecast_tool_hidden_for_explain_intent(engine, market):
 def test_unsupported_is_refused_without_generation(engine, market):
     deps, gen = _deps(engine, RouterOut(intent="unsupported"), [])
     out = run_query(deps, "Should I buy Dogecoin?", as_of=AS_OF)
-    assert out["refused"] and "BTC та ETH" in out["answer"]
+    assert out["refused"] and "BTC and ETH" in out["answer"]
     assert gen.seen == []
 
 
@@ -118,3 +118,22 @@ def test_retry_succeeds_after_feedback(engine, market):
     assert out["verification"]["ok"] and not out.get("refused")
     retry_prompt = gen.seen[-1][-1].content
     assert "99.99%" in retry_prompt and "does not match" in retry_prompt
+
+
+def test_block_list_content_is_read_as_text(engine, market):
+    # The Responses API returns AIMessage.content as a list of content blocks.
+    blocks = [{"type": "text", "text": "BTC moved over the window.\n\nНе є фінансовою порадою."}]
+    deps, _ = _deps(engine, RouterOut(intent="explain"), [AIMessage(content=blocks)])
+    out = run_query(deps, "BTC?", as_of=AS_OF)
+    assert out["answer"].startswith("BTC moved over the window.")
+    assert "'type'" not in out["answer"]
+
+
+def test_refusal_follows_question_language(engine, market):
+    deps, _ = _deps(engine, RouterOut(intent="unsupported"), [])
+    en = run_query(deps, "Should I buy Dogecoin?", as_of=AS_OF)
+    assert en["answer"].startswith("I can explain BTC and ETH")
+    deps, _ = _deps(engine, RouterOut(intent="unsupported"), [])
+    uk = run_query(deps, "Чи купувати Dogecoin?", as_of=AS_OF)
+    assert uk["answer"].startswith("Я можу пояснювати")
+    assert en["answer"].endswith("Не є фінансовою порадою.")

@@ -70,9 +70,18 @@ def title_from_slug(url: str) -> str:
     return words[:1].upper() + words[1:]
 
 
+def tidy_title(title: str) -> str:
+    """Undo GDELT's tokenised spacing: 'SHIB up 35 %' -> 'SHIB up 35%', '( ETH )' -> '(ETH)'."""
+    t = re.sub(r"\s+", " ", title).strip()
+    t = re.sub(r"\s+([%,.;:!?)\]'’])", r"\1", t)  # no space before closing punctuation
+    t = re.sub(r"([(\[$])\s+", r"\1", t)  # no space after opening brackets / currency
+    return re.sub(r"(['’])\s+(s|t|re|ll|ve|d|m)\b", r"\1\2", t)  # "Bitcoin' s" -> "Bitcoin's"
+
+
 def make_row(url: str, title: str | None, seen: datetime, origin: str) -> dict[str, Any]:
     url = normalize_url(url)
-    clean_title = (title or "").strip()
+    raw_title = (title or "").strip()
+    clean_title = tidy_title(raw_title)
     recovered = not clean_title
     if recovered:
         clean_title = title_from_slug(url)
@@ -95,6 +104,8 @@ def make_row(url: str, title: str | None, seen: datetime, origin: str) -> dict[s
             "gdelt_seen": seen.isoformat(),
             "gdelt_origin": origin,
             "title_from_slug": recovered,
+            # Rule 3: the title as GDELT delivered it; `title` holds the tidied form.
+            "gdelt_title": raw_title,
         },
         "content_hash": content_hash(clean_title, None, None),
     }
@@ -250,6 +261,33 @@ def run_archive(engine: Engine, start: date, end: date, workers: int) -> None:
 # --- Report ------------------------------------------------------------------
 
 
+def tidy_stored_titles(engine: Engine) -> int:
+    """One-off: tidy titles of GDELT rows stored before tidy_title existed.
+
+    The original goes to raw.gdelt_title (rule 3); content_hash changes, so the
+    next processing run re-chunks and re-embeds those articles.
+    """
+    with engine.begin() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT id, title, raw FROM articles WHERE channel = 'gdelt' AND NOT raw ? 'gdelt_title'"
+            )
+        ).all()
+        changed = 0
+        for r in rows:
+            tidy = tidy_title(r.title)
+            conn.execute(
+                text(
+                    "UPDATE articles SET title = :t, content_hash = :h, "
+                    "raw = raw || jsonb_build_object('gdelt_title', CAST(:orig AS text)) WHERE id = :id"
+                ),
+                {"t": tidy, "h": content_hash(tidy, None, None), "orig": r.title, "id": r.id},
+            )
+            changed += tidy != r.title
+    logger.info("tidied %d of %d stored GDELT titles", changed, len(rows))
+    return changed
+
+
 def report(engine: Engine) -> dict[str, Any]:
     with engine.connect() as conn:
         per_day = conn.execute(
@@ -296,6 +334,7 @@ def _parse_args(argv: Sequence[str] | None) -> argparse.Namespace:
     arc.add_argument("--end", type=date.fromisoformat, required=True)
     arc.add_argument("--workers", type=int, default=6)
     sub.add_parser("report")
+    sub.add_parser("tidy-titles")
     return parser.parse_args(argv)
 
 
@@ -307,6 +346,8 @@ def main(argv: Iterable[str] | None = None) -> None:
         run_doc_api(engine, args.days)
     elif args.command == "archive":
         run_archive(engine, args.start, args.end, args.workers)
+    elif args.command == "tidy-titles":
+        tidy_stored_titles(engine)
     logger.info("report: %s", json.dumps(report(engine), indent=2))
 
 

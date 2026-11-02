@@ -30,11 +30,18 @@ from crypto_rag.processing.assets import ASSET_SYMBOL
 logger = logging.getLogger(__name__)
 
 Asset = Literal["BTC", "ETH"]
+# Headings are requested in Ukrainian, but a model answering an English question
+# sometimes writes them in English; both map to the same keys.
 SECTION_KEYS = {
     "що сталося": "what_happened",
+    "what happened": "what_happened",
     "ймовірні причини": "likely_causes",
+    "likely causes": "likely_causes",
+    "possible causes": "likely_causes",
     "схожі епізоди": "similar_episodes",
+    "similar episodes": "similar_episodes",
     "прогноз": "forecast",
+    "forecast": "forecast",
 }
 
 
@@ -252,10 +259,10 @@ p AS (
     FROM a
 )
 SELECT topic, count(*) AS articles,
-       round(avg((p6 / p0 - 1) * 100)::numeric, 3) AS avg_move_6h_pct,
-       round(avg(abs(p6 / p0 - 1) * 100)::numeric, 3) AS avg_abs_move_6h_pct,
-       round(avg(vol_after / NULLIF(vol_before, 0))::numeric, 3) AS vol_ratio_after_before,
-       round(avg(CASE tone WHEN 'positive' THEN 1 WHEN 'negative' THEN -1 ELSE 0 END)::numeric, 3) AS avg_tone
+       round(avg((p6 / p0 - 1) * 100)::numeric, 3)::float8 AS avg_move_6h_pct,
+       round(avg(abs(p6 / p0 - 1) * 100)::numeric, 3)::float8 AS avg_abs_move_6h_pct,
+       round(avg(vol_after / NULLIF(vol_before, 0))::numeric, 3)::float8 AS vol_ratio_after_before,
+       round(avg(CASE tone WHEN 'positive' THEN 1 WHEN 'negative' THEN -1 ELSE 0 END)::numeric, 3)::float8 AS avg_tone
 FROM p WHERE p0 IS NOT NULL AND p6 IS NOT NULL
 GROUP BY topic ORDER BY articles DESC
 """
@@ -286,7 +293,7 @@ def stats(engine: EngineDep) -> dict[str, Any]:
         )).mappings().all()  # fmt: skip
         cost = conn.execute(text(
             "SELECT purpose, model, count(*) AS calls, sum(input_tokens) AS input_tokens, "
-            "sum(output_tokens) AS output_tokens, round(sum(cost_usd)::numeric, 4) AS cost_usd "
+            "sum(output_tokens) AS output_tokens, round(sum(cost_usd)::numeric, 4)::float8 AS cost_usd "
             "FROM llm_usage GROUP BY 1, 2 ORDER BY 1, 2"
         )).mappings().all()  # fmt: skip
     rows = lambda rs: [dict(r) for r in rs]  # noqa: E731

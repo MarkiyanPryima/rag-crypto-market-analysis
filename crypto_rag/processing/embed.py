@@ -31,11 +31,18 @@ def embed_texts(
     return [d.embedding for d in sorted(response.data, key=lambda d: d.index)]
 
 
-def embed_pending(engine: Engine, client: OpenAI | None = None, limit: int | None = None) -> int:
+def embed_pending(
+    engine: Engine,
+    client: OpenAI | None = None,
+    limit: int | None = None,
+    article_ids: Sequence[str] | None = None,
+) -> int:
     settings = get_settings()
     done = 0
     with Session(engine) as session:
         stmt = select(Chunk.id, Chunk.text).where(Chunk.embedding.is_(None)).order_by(Chunk.id)
+        if article_ids is not None:
+            stmt = stmt.where(Chunk.article_id.in_(article_ids))
         if limit:
             stmt = stmt.limit(limit)
         rows = session.execute(stmt).all()

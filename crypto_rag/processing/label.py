@@ -56,7 +56,12 @@ def label_article(
     )
 
 
-def label_pending(engine: Engine, client: OpenAI | None = None, limit: int | None = None) -> int:
+def label_pending(
+    engine: Engine,
+    client: OpenAI | None = None,
+    limit: int | None = None,
+    article_ids: Sequence[str] | None = None,
+) -> int:
     """Label articles without a label. Failures are logged and retried on the next run."""
     model = get_settings().label_model
     done = failed = 0
@@ -67,6 +72,8 @@ def label_pending(engine: Engine, client: OpenAI | None = None, limit: int | Non
             .where(ArticleLabel.article_id.is_(None))
             .order_by(Article.published_at)
         )
+        if article_ids is not None:
+            stmt = stmt.where(Article.id.in_(article_ids))
         if limit:
             stmt = stmt.limit(limit)
         for article in session.scalars(stmt):

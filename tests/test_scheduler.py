@@ -11,3 +11,19 @@ def test_every_scheduled_job_exists_and_cadence_matches_plan():
     forecaster = {j: str(t) for j, t in jobs.SCHEDULES["forecaster"]}
     assert "hour='0', minute='5'" in forecaster["daily_forecast"]
     assert "day_of_week='mon'" in forecaster["retrain"]
+
+
+def test_collector_skips_paid_steps_unless_enabled(monkeypatch):
+    from pydantic import SecretStr
+
+    from crypto_rag.config import get_settings
+
+    calls = []
+    monkeypatch.setattr(jobs, "run_pipeline", lambda skip_llm: calls.append(skip_llm))
+    s = get_settings()
+    monkeypatch.setattr(s, "openai_api_key", SecretStr("sk-test"))
+    monkeypatch.setattr(s, "llm_processing_enabled", False)
+    jobs._process_new_articles()
+    monkeypatch.setattr(s, "llm_processing_enabled", True)
+    jobs._process_new_articles()
+    assert calls == [True, False]

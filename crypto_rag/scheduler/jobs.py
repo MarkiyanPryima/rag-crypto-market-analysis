@@ -41,8 +41,9 @@ HEARTBEAT = Path("/tmp/crypto_rag_heartbeat")  # noqa: S108 - container-local li
 
 
 def _process_new_articles() -> None:
-    """Chunk always; embed and label only when an OpenAI key is configured."""
-    run_pipeline(skip_llm=not get_settings().openai_api_key.get_secret_value())
+    """Chunk always; embed and label only when enabled and a key is configured."""
+    s = get_settings()
+    run_pipeline(skip_llm=not (s.llm_processing_enabled and s.openai_api_key.get_secret_value()))
 
 
 def job_rss() -> None:
@@ -76,6 +77,9 @@ def job_funding() -> None:
 def _guardian(command: str) -> None:
     if not get_settings().guardian_api_key.get_secret_value():
         logger.warning("GUARDIAN_API_KEY not set; skipping Guardian %s", command)
+        return
+    if not get_settings().guardian_tags:
+        logger.warning("GUARDIAN_TAGS not confirmed yet; skipping Guardian %s", command)
         return
     engine = get_engine()
     if command == "update":

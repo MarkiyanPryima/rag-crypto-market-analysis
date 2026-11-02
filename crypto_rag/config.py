@@ -4,12 +4,16 @@ Every tunable that affects results (model names, decay half-life, thresholds)
 lives here so that an experiment can be reproduced from its saved config.
 """
 
+import contextlib
+import json
 import logging
+import re
 from datetime import UTC, datetime
 from functools import lru_cache
+from typing import Annotated
 
-from pydantic import Field, SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field, SecretStr, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -29,26 +33,32 @@ class Settings(BaseSettings):
     label_model: str = "gpt-5.6-luna"
     generator_model: str = "gpt-5.6-terra"
     judge_model: str = "gpt-5.6-sol"
-    # Minimal temperature; set to empty in .env for models that reject the parameter.
-    llm_temperature: float | None = 0.0
+    # None = parameter not sent. The gpt-5.6 models reject `temperature` (verified
+    # 2026-11-02); set LLM_TEMPERATURE=0 only for models that accept it.
+    llm_temperature: float | None = None
     embedding_model: str = "text-embedding-3-large"
     embedding_dimensions: int = 1536
-    # USD per 1M tokens: [input, output]. Fill in from the account's pricing page.
+    # USD per 1M tokens: [input, output], standard (uncached) API rates as of
+    # 2026-11-02 (Luna/Terra prices cut on 2026-07-30). Sol is not priced yet.
     llm_prices: dict[str, list[float]] = Field(
-        default_factory=lambda: {"text-embedding-3-large": [0.13, 0.0]}
+        default_factory=lambda: {
+            "text-embedding-3-large": [0.13, 0.0],
+            "gpt-5.6-luna": [0.20, 1.20],
+            "gpt-5.6-terra": [2.00, 12.00],
+        }
     )
 
     # --- Data scope ---------------------------------------------------------
     symbols: list[str] = Field(default_factory=lambda: ["BTCUSDT", "ETHUSDT"])
     start_date: datetime = datetime(2025, 1, 20, tzinfo=UTC)
-    # PROVISIONAL until confirmed by the author from `guardian tags` output (stage 4).
-    guardian_tags: list[str] = Field(
-        default_factory=lambda: [
-            "technology/bitcoin",
-            "technology/cryptocurrencies",
-            "technology/ethereum",
-        ]
-    )
+    # Set in .env only after the author confirms them from `guardian tags` output
+    # (stage 4). Empty means "not confirmed": Guardian jobs are skipped.
+    # Comma-separated in .env (GUARDIAN_TAGS=a/b,c/d): a JSON list loses its quotes
+    # when the file is sourced by a shell (`set -a; . .env`).
+    guardian_tags: Annotated[list[str], NoDecode] = Field(default_factory=list)
+    # Paid OpenAI steps (embeddings, labels) in the scheduled collector. Off by
+    # default so a restart never starts bulk spending on its own.
+    llm_processing_enabled: bool = False
 
     # --- Retrieval ----------------------------------------------------------
     decay_half_life_hours: float = 48.0
@@ -71,16 +81,40 @@ class Settings(BaseSettings):
 
     log_level: str = "INFO"
 
+    @field_validator("guardian_tags", mode="before")
+    @classmethod
+    def _split_tags(cls, value: object) -> object:
+        if isinstance(value, str):
+            text = value.strip()
+            if text.startswith("["):
+                with contextlib.suppress(json.JSONDecodeError):
+                    return json.loads(text)
+                text = text.strip("[]")
+            return [t.strip().strip("'\"") for t in text.split(",") if t.strip().strip("'\"")]
+        return value
+
 
 @lru_cache
 def get_settings() -> Settings:
     return Settings()
 
 
+# API keys travel as URL parameters (Guardian `api-key=`), and httpx puts the full
+# URL into exception messages that retry and error logs print.
+_SECRET_PARAM = re.compile(r"((?:api[-_]?key|apikey|token)=)[^&\s'\"]+", re.IGNORECASE)
+
+
+class RedactingFormatter(logging.Formatter):
+    """Masks secret URL parameters in the fully formatted record, tracebacks included."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return _SECRET_PARAM.sub(r"\1***", super().format(record))
+
+
 def setup_logging(level: str | None = None) -> None:
-    logging.basicConfig(
-        level=level or get_settings().log_level,
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-    )
+    logging.basicConfig(level=level or get_settings().log_level)
+    formatter = RedactingFormatter("%(asctime)s %(levelname)s %(name)s: %(message)s")
+    for handler in logging.getLogger().handlers:
+        handler.setFormatter(formatter)
     # One INFO line per HTTP request drowns the ingestion progress messages.
     logging.getLogger("httpx").setLevel(logging.WARNING)

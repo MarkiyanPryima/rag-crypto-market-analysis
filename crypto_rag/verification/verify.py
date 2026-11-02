@@ -23,7 +23,8 @@ NUM_RE = re.compile(
 )
 DATE_RE = re.compile(r"\b\d{4}-\d{2}-\d{2}(?:[ T]\d{2}:\d{2}(?::\d{2})?)?\b|\b\d{1,2}:\d{2}\b")
 DURATION_RE = re.compile(
-    r"^\s*(?:-|\s)?(h\b|hours?\b|hrs?\b|год|годин|d\b|days?\b|дн|днів|дні|день|weeks?\b|тижн|min|хв|months?\b|місяц|years?\b|рок)",
+    # Ukrainian stems cover adjective forms too: "30-денного", "48-годинний", "7-річний".
+    r"^\s*(?:-|\s)?(h\b|hours?\b|hrs?\b|год|d\b|days?\b|дн|ден|weeks?\b|тиж|min|хв|months?\b|місяц|years?\b|рок|річ)",
     re.IGNORECASE,
 )
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-ZА-ЯІЇЄҐ#*\-])|\n")
@@ -144,14 +145,18 @@ def verify(answer: str, tool_results: dict[str, Any], as_of: datetime) -> Verifi
                 VerificationError("source_dates", f"[{ref}] was published after as_of", ref)
             )
 
-    # 1. numbers
-    for sentence in _sentences(answer):
+    # 1. numbers. A figure quoted from news may cite its source anywhere in the same
+    # paragraph: models often put [c_…] at the end of the paragraph, not the sentence.
+    sentences = [
+        (
+            sentence,
+            [sources[r]["text"] for r in REF_RE.findall(paragraph) if "text" in sources.get(r, {})],
+        )
+        for paragraph in re.split(r"\n\s*\n", answer)
+        for sentence in _sentences(paragraph)
+    ]
+    for sentence, cited_chunks in sentences:
         cleaned = DATE_RE.sub(" ", sentence)
-        cited_chunks = [
-            sources[r]["text"]
-            for r in REF_RE.findall(sentence)
-            if r in sources and "text" in sources[r]
-        ]
         for m in NUM_RE.finditer(cleaned):
             token = m.group(0)
             core = token.lstrip("+-−$")
@@ -168,7 +173,10 @@ def verify(answer: str, tool_results: dict[str, Any], as_of: datetime) -> Verifi
             if ref is None:
                 errors.append(
                     VerificationError(
-                        "numbers", f"number {token} has no [m…]/[f…] reference", token
+                        "numbers",
+                        f"number {token} has no [m…]/[f…] reference. If it is quoted from a news "
+                        f"item, cite that item [c_…] in the same paragraph; otherwise remove it",
+                        token,
                     )
                 )
                 continue
@@ -203,7 +211,9 @@ def verify(answer: str, tool_results: dict[str, Any], as_of: datetime) -> Verifi
                     errors.append(VerificationError(
                         "temporal_order",
                         f"[{ref}] is named as a cause but was published after the move began "
-                        f"({move_start:%Y-%m-%d %H:%M} UTC); describe it as a reaction or drop it",
+                        f"({move_start:%Y-%m-%d %H:%M} UTC). Only news published before the move may "
+                        f"appear under 'Ймовірні причини'; move it to 'Що сталося' as later coverage, "
+                        f"or drop it",
                         ref,
                     ))  # fmt: skip
     return VerificationResult(ok=not errors, errors=errors)

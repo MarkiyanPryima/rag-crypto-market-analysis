@@ -14,6 +14,7 @@ return fewer than 50 candidates.
 """
 
 import math
+import re
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timedelta
@@ -87,6 +88,24 @@ class NewsHit:
         return asdict(self)
 
 
+def fts_query(query: str) -> str:
+    """OR-join the query words for websearch_to_tsquery.
+
+    websearch_to_tsquery ANDs plain words, so a long model-written query such as
+    "bitcoin price macro regulation institutional flows" matches nothing. Joining
+    with `or` keeps the same parser and stemming; ts_rank still ranks chunks with
+    more matching terms higher. Quoted phrases are kept as phrases.
+    """
+    phrases = re.findall(r'"[^"]+"', query)
+    rest = re.sub(r'"[^"]+"', " ", query)
+    words = [
+        w
+        for w in re.findall(r"[\w$%.-]+", rest)
+        if len(w) > 1 and w.lower() not in {"or", "and", "not"}
+    ]
+    return " or ".join([*phrases, *words])
+
+
 def decay_factor(published_at: datetime, as_of: datetime, half_life_hours: float) -> float:
     dt_hours = max((as_of - published_at).total_seconds() / 3600, 0.0)
     return math.exp(-math.log(2) / half_life_hours * dt_hours)
@@ -116,7 +135,7 @@ def search_news(
         "since": as_of - timedelta(hours=window_hours),
         "asset": asset,
         "qvec": qvec,
-        "query": query,
+        "query": fts_query(query),
         "n": s.retrieval_candidates,
     }
     with engine.connect() as conn:
