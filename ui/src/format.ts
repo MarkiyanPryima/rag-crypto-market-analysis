@@ -16,3 +16,13 @@ export const nowInput = () => isoToLocalInput(new Date().toISOString())
 
 export const num = (v: number | null | undefined, digits = 2) =>
   v === null || v === undefined ? '—' : v.toLocaleString('en-US', { maximumFractionDigits: digits })
+
+/** "3 год до запиту" / "2 дні до запиту" relative to a reference moment (as_of). */
+export function relativeTo(iso: string, refIso: string): string {
+  const h = (new Date(refIso).getTime() - new Date(iso).getTime()) / 3_600_000
+  const abs = Math.abs(h)
+  const when = h >= 0 ? 'до запиту' : 'після запиту'
+  if (abs < 1) return `${Math.max(1, Math.round(abs * 60))} хв ${when}`
+  if (abs < 48) return `${Math.round(abs)} год ${when}`
+  return `${Math.round(abs / 24)} дн ${when}`
+}

@@ -116,6 +116,16 @@ export interface Stats {
   }>
 }
 
+export interface Health {
+  status: string
+  database: string
+  last_candle: string | null
+  last_article: string | null
+  last_fetch: string | null
+  openai_configured: boolean
+  guardian_configured: boolean
+}
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -163,6 +173,7 @@ export const api = {
     request<AskResponse>('/ask', { method: 'POST', body: JSON.stringify(body) }),
   trace: (id: number) => request<Trace>(`/trace/${id}`),
   stats: () => request<Stats>('/stats'),
+  health: () => request<Health>('/health'),
   prices: (asset: Asset, start: string, asOf: string) =>
     request<Candle[]>(`/prices?${qs({ asset, start, as_of: asOf })}`),
   news: (start: string, asOf: string, asset?: Asset) =>
