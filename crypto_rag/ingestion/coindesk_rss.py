@@ -40,7 +40,7 @@ NS = {"dc": "http://purl.org/dc/elements/1.1/"}
 
 
 def normalize_url(url: str) -> str:
-    """Drop query, fragment and trailing slash so RSS and GDELT URLs match."""
+    """Drop query, fragment and trailing slash so the same article always has one URL."""
     parts = urlsplit(url.strip())
     path = parts.path.rstrip("/") or "/"
     return urlunsplit((parts.scheme.lower(), parts.netloc.lower(), path, "", ""))
@@ -116,9 +116,8 @@ def parse_feed(xml: bytes, fetched_at: datetime) -> list[dict[str, Any]]:
 def upsert_rss(engine: Engine, rows: Sequence[dict[str, Any]]) -> int:
     """Insert new items; refresh mutable fields of known ones. Returns new-row count.
 
-    fetched_at keeps the FIRST time the item was seen. If GDELT saw the URL
-    first, the RSS pubDate (true publication time) replaces GDELT's seen-time
-    and the GDELT metadata is kept inside raw.
+    fetched_at keeps the FIRST time the item was seen; raw metadata from an
+    earlier sighting is merged, not replaced.
     """
     if not rows:
         return 0

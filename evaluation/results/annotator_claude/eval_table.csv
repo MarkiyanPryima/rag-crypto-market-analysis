@@ -1,0 +1,5 @@
+config,answers,refusal_share,numeric_accuracy,numbers_per_answer,wrong_numbers,faithfulness,judged_answers,context_recall,recall_questions
+no_retrieval,41,0.0000,1.0000,0.0000,0,,0,,0
+news_only,41,0.0000,0.9268,3.4634,3,,0,0.6543,18
+news_tools,41,0.0000,0.9512,15.7805,2,0.9397,20,0.5729,18
+full,41,0.0000,1.0000,16.1707,0,0.9313,19,0.5398,18

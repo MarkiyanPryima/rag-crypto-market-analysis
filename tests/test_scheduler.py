@@ -27,3 +27,28 @@ def test_collector_skips_paid_steps_unless_enabled(monkeypatch):
     monkeypatch.setattr(s, "llm_processing_enabled", True)
     jobs._process_new_articles()
     assert calls == [True, False]
+
+
+def test_jobs_missed_during_sleep_still_run(monkeypatch):
+    captured = []
+
+    class FakeScheduler:
+        def __init__(self, timezone):
+            pass
+
+        def add_job(self, func, trigger=None, **kw):
+            captured.append(kw)
+
+        def add_listener(self, *a, **kw):
+            pass
+
+        def start(self):
+            pass
+
+    monkeypatch.setattr(jobs, "BlockingScheduler", FakeScheduler)
+    monkeypatch.setattr(jobs, "HEARTBEAT", type("H", (), {"touch": staticmethod(lambda: None)})())
+    jobs.run_process("collector")
+    scheduled = [kw for kw in captured if kw.get("id") in dict(jobs.SCHEDULES["collector"])]
+    assert scheduled and all(
+        kw["misfire_grace_time"] is None and kw["coalesce"] for kw in scheduled
+    )

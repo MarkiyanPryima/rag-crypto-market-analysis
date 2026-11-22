@@ -13,8 +13,6 @@ from crypto_rag.llm import get_client, log_usage
 
 logger = logging.getLogger(__name__)
 
-BATCH = 100
-
 
 def embed_texts(
     engine: Engine, texts: Sequence[str], purpose: str = "embed", client: OpenAI | None = None
@@ -46,15 +44,18 @@ def embed_pending(
         if limit:
             stmt = stmt.limit(limit)
         rows = session.execute(stmt).all()
-        for i in range(0, len(rows), BATCH):
-            batch = rows[i : i + BATCH]
+        size = settings.embedding_batch_size
+        for i in range(0, len(rows), size):
+            batch = rows[i : i + size]
             vectors = embed_texts(engine, [r.text for r in batch], client=client)
-            for row, vector in zip(batch, vectors, strict=True):
-                session.execute(
-                    update(Chunk)
-                    .where(Chunk.id == row.id)
-                    .values(embedding=vector, embedding_model=settings.embedding_model)
-                )
+            # One bulk UPDATE per batch (by primary key) instead of a statement per chunk.
+            session.execute(
+                update(Chunk),
+                [
+                    {"id": row.id, "embedding": vector, "embedding_model": settings.embedding_model}
+                    for row, vector in zip(batch, vectors, strict=True)
+                ],
+            )
             session.commit()
             done += len(batch)
             logger.info("embedded %d/%d chunks", done, len(rows))

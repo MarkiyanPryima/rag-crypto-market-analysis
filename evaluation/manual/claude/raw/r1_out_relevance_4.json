@@ -1,0 +1,74 @@
+[
+ {
+  "item_id": "eth-2026101506|coindesk:business/2026/10/12/tom-lee-sees-usd2-trillion-wealth-transfer-fueling-crypto-demand-as-bitmine-buys-more-ether",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026101506|coindesk:business/2026/10/14/standard-chartered-unlocks-direct-bitcoin-and-ether-trading-for-affluent-uae-clients",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026101506|coindesk:markets/2026/10/12/u-s-inflation-ethereum-upgrade-talks-crypto-week-ahead",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026101506|coindesk:markets/2026/10/13/bitcoin-ether-slip-and-rebound-as-south-korean-stocks-slide-on-ai-related-concerns",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026101506|coindesk:tech/2026/10/13/once-largest-ethereum-nft-marketplace-blur-is-shutting-down-after-volumes-collapse-99",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026101820|coindesk:markets/2026/10/16/xrp-has-failed-to-make-holders-rich-like-bitcoin-and-ether-here-s-why",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026101820|coindesk:tech/2026/10/16/an-openai-agent-ran-out-of-ethereum-funds-and-took-from-a-wallet-it-did-not-own",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026102218|coindesk:tech/2026/10/22/ethereum-s-four-minute-settlement-plan-could-lower-the-cost-of-moving-crypto",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026102603|coindesk:markets/2026/10/26/bitcoin-slips-under-usd80-000-as-traders-de-risk-ahead-of-fed-meeting",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:business/2026/10/29/switzerland-s-first-bitcoin-etf-gets-rare-exemption-will-open-to-overseas-brokers",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:business/2026/10/30/binance-hack-drained-wallets-backing-customer-assets-reserve-data-shows",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:markets/2026/10/30/bitcoin-ether-and-xrp-selloff-wipes-out-usd1-5-billion-in-leveraged-crypto-bets",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:markets/2026/10/30/crypto-liquidations-jump-to-usd1-57-billion-as-binance-hack-sends-bitcoin-ether-lower",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:markets/2026/10/30/usd6-billion-binance-hack-sends-bitcoin-ether-tumbling-standard-chartered-sees-more-losses-ahead",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:tech/2026/10/29/ethereum-clients-patch-flaw-that-could-let-attackers-redirect-eth-rewards",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026103016|coindesk:tech/2026/10/30/here-s-how-one-ethereum-permission-let-an-attacker-drain-usd2-5-billion-from-binance",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|guardian:business/2026/oct/29/binance-crypto-exchange-hack",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026103016|guardian:business/2026/oct/30/crypto-heist-binance-who-did-it-are-investments-safe",
+  "relevant": true
+ }
+]

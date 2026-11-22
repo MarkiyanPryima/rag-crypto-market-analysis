@@ -1,0 +1,238 @@
+[
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d3ed989bade0309a2b46d5",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d40d3d9bade0309a2b46ff",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d48bcd9bade0309a2b474a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d48bcd9bade0309a2b474b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d4aef59bade0309a2b475b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d4fc4d9bade0309a2b47bf",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d506d99bade0309a2b47dc",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d511659bade0309a2b47e6",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5348d9bade0309a2b481a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d53b959bade0309a2b4821",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d554319bade0309a2b4844",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d557b59bade0309a2b4848",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d557b59bade0309a2b4849",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d55b389bade0309a2b484d",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d565c59bade0309a2b4859",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d57add9bade0309a2b4873",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5889d9bade0309a2b487d",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5cbb99bade0309a2b48ad",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5d9c99bade0309a2b48b2",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5f96d9bade0309a2b48d1",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d600749bade0309a2b48d6",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d603f99bade0309a2b48d7",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d619119bade0309a2b48f3",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d6239c9bade0309a2b48fa",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d6239c9bade0309a2b48fb",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d64dcd9bade0309a2b492a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d654d59bade0309a2b4936",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d65bdd9bade0309a2b493c",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d65bdd9bade0309a2b4940",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d662e49bade0309a2b4954",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699cf109742707706ad2a1eb",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699daee2742707706ad2a294",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699daee2742707706ad2a295",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699db265742707706ad2a29a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e3f05742707706ad2a334",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e4289742707706ad2a338",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e57a3742707706ad2a33d",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e57a3742707706ad2a33e",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e5b25742707706ad2a341",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e5b25742707706ad2a342",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699eb309742707706ad2a37e",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699ed9b5742707706ad2a39f",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f0062742707706ad2a3d7",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f03e5742707706ad2a3e6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f18fd742707706ad2a403",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f432d742707706ad2a43f",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f4dba742707706ad2a44d",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f69d979238a7782d90ea6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f6d5d79238a7782d90eab",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f827579238a7782d90ec5",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:daybook-us/2026/10/21/bitcoin-risk-management-grows-more-popular-as-the-just-bet-on-price-era-fades",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:daybook-us/2026/10/22/crypto-traders-seek-shelter-in-bitcoin-as-altcoins-slide-and-etf-flows-wobble",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/21/bitcoin-hovers-around-usd83-000-as-ai-earnings-revive-tech-zec-jumps-11",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/21/crypto-rises-with-asian-tech-stocks-zcash-extends-gain-after-setting-upgrade-date",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/22/asian-stocks-tumble-bitcoin-retreats-as-china-enters-bear-market",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/22/bitcoin-etfs-attract-usd1-08-billion-in-3-days-but-it-may-not-be-enough-for-a-steep-rally",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/22/bitcoin-gives-back-its-run-at-usd85-000-as-tesla-and-meta-fail-to-calm-ai-nerves",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/22/bitcoin-slides-below-usd82-000-as-ai-doubts-return-with-defi-tokens-leading-declines",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026102218|coindesk:markets/2026/10/22/china-seeks-to-seize-61-800-btc-tied-to-usd5-7-billion-fraud-scheme",
+  "relevant": true
+ }
+]

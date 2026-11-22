@@ -5,11 +5,15 @@
     GET  /stats          price reaction by news topic, forecast summary, data volumes
     GET  /prices         hourly closes for the chart (bounded by as_of)
     GET  /news           article markers for the chart (bounded by as_of)
+    GET  /annotations            progress of the author's manual annotation (stage 17)
+    GET  /annotations/{task}     items of one task (model outputs hidden)
+    PUT  /annotations/{task}/{item_id}   save the author's label
     GET  /health         database and data freshness
 
 Run: uvicorn crypto_rag.api.main:app --reload
 """
 
+import json
 import logging
 import re
 from collections.abc import AsyncIterator
@@ -24,7 +28,9 @@ from sqlalchemy import Engine, text
 
 from crypto_rag.agent.graph import AgentDeps, default_deps, run_query
 from crypto_rag.config import get_settings, setup_logging
+from crypto_rag.db.models import ANNOTATION_TASKS, TONES, TOPICS
 from crypto_rag.db.session import get_engine
+from crypto_rag.evaluation.annotate import public
 from crypto_rag.processing.assets import ASSET_SYMBOL
 
 logger = logging.getLogger(__name__)
@@ -60,7 +66,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().cors_origins,
-    allow_methods=["GET", "POST"],
+    allow_methods=["GET", "POST", "PUT"],
     allow_headers=["*"],
 )
 
@@ -275,8 +281,10 @@ def stats(engine: EngineDep) -> dict[str, Any]:
             "SELECT symbol, count(*) AS n, min(ts) AS first, max(ts) AS last FROM candles GROUP BY symbol ORDER BY symbol"
         )).mappings().all()  # fmt: skip
         articles = conn.execute(text(
-            "SELECT to_char(date_trunc('month', published_at), 'YYYY-MM') AS month, source, channel, count(*) AS n "
-            "FROM articles GROUP BY 1, 2, 3 ORDER BY 1, 2, 3"
+            # Dataset articles are grouped by dataset: `source` there names one of ~120 publishers.
+            "SELECT to_char(date_trunc('month', published_at), 'YYYY-MM') AS month, "
+            "CASE WHEN channel = 'hf' THEN raw->>'dataset' ELSE source END AS source, channel, "
+            "count(*) AS n FROM articles GROUP BY 1, 2, 3 ORDER BY 1, 2, 3"
         )).mappings().all()  # fmt: skip
         totals = conn.execute(text(
             "SELECT (SELECT count(*) FROM articles) AS articles, (SELECT count(*) FROM chunks) AS chunks, "
@@ -356,6 +364,74 @@ def news(
             {"f": start, "t": end, "asset": asset, "n": limit},
         ).mappings().all()  # fmt: skip
     return [dict(r) for r in rows]
+
+
+# --- Manual annotation (stage 17) ---------------------------------------------
+
+Task = Literal["relevance", "claims", "labels"]
+assert set(Task.__args__) == set(ANNOTATION_TASKS)  # noqa: S101 - keeps the two lists in sync
+
+
+class LabelIn(BaseModel):
+    label: dict[str, Any]
+
+
+def _check_label(task: str, label: dict[str, Any], payload: dict[str, Any]) -> None:
+    if task == "relevance":
+        ok = isinstance(label.get("relevant"), bool)
+    elif task == "claims":
+        marks = label.get("supported")
+        ok = (
+            isinstance(marks, list)
+            and len(marks) == len(payload["claims"])
+            and all(isinstance(m, bool) for m in marks)
+        )
+    else:
+        ok = label.get("topic") in TOPICS and label.get("tone") in TONES
+    if not ok:
+        raise HTTPException(422, f"label does not fit task {task!r}")
+
+
+@app.get("/annotations")
+def annotation_progress(engine: EngineDep) -> dict[str, dict[str, int]]:
+    with engine.connect() as conn:
+        rows = conn.execute(text(
+            "SELECT task, count(*) AS total, count(label) AS done FROM annotations GROUP BY task"
+        )).mappings().all()  # fmt: skip
+    return {r["task"]: {"total": r["total"], "done": r["done"]} for r in rows}
+
+
+@app.get("/annotations/{task}")
+def annotation_items(task: Task, engine: EngineDep) -> list[dict[str, Any]]:
+    with engine.connect() as conn:
+        rows = conn.execute(
+            text(
+                "SELECT item_id, payload, label FROM annotations WHERE task = :t ORDER BY item_id"
+            ),
+            {"t": task},
+        ).mappings().all()  # fmt: skip
+    return [{"item_id": r["item_id"], "payload": public(r["payload"]), "label": r["label"]}
+            for r in rows]  # fmt: skip
+
+
+@app.put("/annotations/{task}/{item_id:path}")
+def save_annotation(task: Task, item_id: str, body: LabelIn, engine: EngineDep) -> dict[str, Any]:
+    with engine.begin() as conn:
+        payload = conn.execute(
+            text("SELECT payload FROM annotations WHERE task = :t AND item_id = :i"),
+            {"t": task, "i": item_id},
+        ).scalar_one_or_none()
+        if payload is None:
+            raise HTTPException(404, "no such annotation item")
+        _check_label(task, body.label, payload)
+        conn.execute(
+            text(
+                "UPDATE annotations SET label = CAST(:l AS jsonb), labelled_at = now() "
+                "WHERE task = :t AND item_id = :i"
+            ),
+            {"l": json.dumps(body.label), "t": task, "i": item_id},
+        )
+    return {"item_id": item_id, "label": body.label}
 
 
 @app.get("/health")

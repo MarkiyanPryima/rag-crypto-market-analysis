@@ -157,10 +157,12 @@ def _heartbeat(event: JobExecutionEvent) -> None:
 def run_process(name: str) -> None:
     sched = BlockingScheduler(timezone=UTC)
     for job_id, trigger in SCHEDULES[name]:
-        # coalesce + max_instances=1: a slow job is never run twice in parallel,
-        # and missed runs (e.g. after downtime) collapse into one.
+        # coalesce + max_instances=1: a slow job is never run twice in parallel, and runs
+        # missed while the host slept collapse into one. misfire_grace_time=None runs that
+        # one however late it is: with a finite grace a laptop waking after hours skipped
+        # every job, and RSS items that scrolled out of the 25-item feed were lost.
         sched.add_job(JOBS[job_id], trigger, id=job_id, coalesce=True, max_instances=1,
-                      misfire_grace_time=600)  # fmt: skip
+                      misfire_grace_time=None)  # fmt: skip
     for job_id in ON_START[name]:
         sched.add_job(JOBS[job_id], id=f"{job_id}_startup", next_run_time=datetime.now(UTC))
     # Keeps the heartbeat fresh even between long-interval jobs.

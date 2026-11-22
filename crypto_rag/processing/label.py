@@ -74,6 +74,9 @@ def label_pending(
         )
         if article_ids is not None:
             stmt = stmt.where(Article.id.in_(article_ids))
+        if not get_settings().label_hf_articles:
+            # Dataset articles are left unlabelled unless enabled (see config.label_hf_articles).
+            stmt = stmt.where(Article.channel != "hf")
         if limit:
             stmt = stmt.limit(limit)
         for article in session.scalars(stmt):

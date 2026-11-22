@@ -137,3 +137,31 @@ def test_refusal_follows_question_language(engine, market):
     uk = run_query(deps, "Чи купувати Dogecoin?", as_of=AS_OF)
     assert uk["answer"].startswith("Я можу пояснювати")
     assert en["answer"].endswith("Не є фінансовою порадою.")
+
+
+def test_news_only_config_offers_news_tools_and_skips_verification(engine, market):
+    from crypto_rag.agent.graph import CONFIGS
+
+    router = ScriptedChat(structured=[RouterOut(intent="explain", asset="BTC")], script=[], seen=[])
+    gen = ScriptedChat(script=[AIMessage(content="BTC fell 99% today.")], seen=[], structured=[])
+    out = run_query(
+        AgentDeps(engine, router, gen, config=CONFIGS["news_only"]), "Why?", as_of=AS_OF
+    )
+    assert gen.seen[0] == [{"tools": ["search_news", "news_around_move"]}]
+    # Unverified: the made-up number passes through; only the disclaimer is added.
+    assert out["answer"] == "BTC fell 99% today.\n\nНе є фінансовою порадою."
+    assert "verification" not in out or not out["verification"]
+    assert [e["event"] for e in out["trace"]] == ["router", "generate", "finish"]
+
+
+def test_no_retrieval_config_calls_the_bare_model(engine, market):
+    from crypto_rag.agent.graph import CONFIGS
+
+    router = ScriptedChat(structured=[RouterOut(intent="explain", asset="BTC")], script=[], seen=[])
+    gen = ScriptedChat(script=[AIMessage(content="No idea.")], seen=[], structured=[])
+    out = run_query(
+        AgentDeps(engine, router, gen, config=CONFIGS["no_retrieval"]), "Why?", as_of=AS_OF
+    )
+    (prompt,) = gen.seen  # no bind_tools call recorded
+    assert "No tools or data are available" in prompt[0].content
+    assert out["tool_calls"] == []

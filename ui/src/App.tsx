@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AnnotateScreen } from './AnnotateScreen'
 import { api, type Health } from './api'
 import { ErrorBoundary } from './ErrorBoundary'
 import { fmtTime } from './format'
@@ -6,7 +7,7 @@ import { IconLogo, IconMoon, IconSun } from './icons'
 import { QueryScreen } from './QueryScreen'
 import { StatsScreen } from './StatsScreen'
 
-type Tab = 'query' | 'stats'
+type Tab = 'query' | 'stats' | 'annotate'
 type Theme = 'light' | 'dark'
 
 function initialTheme(): Theme {
@@ -68,6 +69,9 @@ export default function App() {
             <button role="tab" aria-selected={tab === 'stats'} className={tab === 'stats' ? 'on' : ''} onClick={() => setTab('stats')}>
               Статистика
             </button>
+            <button role="tab" aria-selected={tab === 'annotate'} className={tab === 'annotate' ? 'on' : ''} onClick={() => setTab('annotate')}>
+              Розмітка
+            </button>
           </nav>
           <div className="top-actions">
             <span className="status-pill" title={health?.last_candle ? `Остання свічка: ${fmtTime(health.last_candle)} UTC` : ''}>
@@ -85,7 +89,7 @@ export default function App() {
       </header>
       <div className="app">
         <main>
-          <ErrorBoundary key={tab}>{tab === 'query' ? <QueryScreen /> : <StatsScreen />}</ErrorBoundary>
+          <ErrorBoundary key={tab}>{tab === 'query' ? <QueryScreen /> : tab === 'stats' ? <StatsScreen /> : <AnnotateScreen />}</ErrorBoundary>
         </main>
       </div>
     </>

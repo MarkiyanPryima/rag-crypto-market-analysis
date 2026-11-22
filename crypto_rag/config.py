@@ -39,18 +39,25 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-large"
     embedding_dimensions: int = 1536
     # USD per 1M tokens: [input, output], standard (uncached) API rates as of
-    # 2026-11-02 (Luna/Terra prices cut on 2026-07-30). Sol is not priced yet.
+    # 2026-11-02 (Luna/Terra prices cut on 2026-07-30); Sol as of 2026-11-08 (judge only).
     llm_prices: dict[str, list[float]] = Field(
         default_factory=lambda: {
             "text-embedding-3-large": [0.13, 0.0],
             "gpt-5.6-luna": [0.20, 1.20],
             "gpt-5.6-terra": [2.00, 12.00],
+            "gpt-5.6-sol": [4.00, 20.00],
         }
     )
 
     # --- Data scope ---------------------------------------------------------
     symbols: list[str] = Field(default_factory=lambda: ["BTCUSDT", "ETHUSDT"])
-    start_date: datetime = datetime(2025, 1, 20, tzinfo=UTC)
+    start_date: datetime = datetime(2020, 1, 1, tzinfo=UTC)
+    # Sources whose articles feed the forecasting news features (see forecasting/features.py).
+    feature_news_sources: list[str] = Field(default_factory=lambda: ["guardian"])
+    # Topic/tone labels for Hugging Face dataset articles cost one model call each and are
+    # not needed while news features come from The Guardian only. Off by default.
+    label_hf_articles: bool = False
+    embedding_batch_size: int = 256
     # Set in .env only after the author confirms them from `guardian tags` output
     # (stage 4). Empty means "not confirmed": Guardian jobs are skipped.
     # Comma-separated in .env (GUARDIAN_TAGS=a/b,c/d): a JSON list loses its quotes

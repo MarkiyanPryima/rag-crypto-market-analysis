@@ -37,8 +37,26 @@ Rules:
 5. End with the line: {disclaimer}
 6. Answer in the language of the question. No numbered lists. Be concise.
 
-Call get_market_stats first, then search_news (and news_around_move for the sharpest hour),
-then find_similar_episodes.{forecast_hint}
+{tool_hint}{forecast_hint}
+"""
+
+TOOL_HINT = (
+    "Call get_market_stats first, then search_news (and news_around_move for the sharpest hour),\n"
+    "then find_similar_episodes."
+)
+# Evaluation configuration "news only" (stage 17): no numeric tools.
+NEWS_ONLY_HINT = "Only news tools are available: call search_news, and news_around_move for the time of the move."
+
+# Evaluation configuration "no retrieval" (stage 17): the bare model, no tools, no data.
+NO_TOOLS_PROMPT = """\
+You explain BTC/ETH market moves. No tools or data are available: answer from your own
+knowledge. The current moment is {as_of} UTC. Asset: {asset}.
+A price move and a news event happening together is a coincidence in time, not a proven cause.
+Structure (Markdown headings, in this order):
+   ## Що сталося
+   ## Ймовірні причини
+End with the line: {disclaimer}
+Answer in the language of the question. No numbered lists. Be concise.
 """
 
 FORECAST_HINT = " Call get_forecast for the forecast section."

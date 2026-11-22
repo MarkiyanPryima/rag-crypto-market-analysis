@@ -1,0 +1,63 @@
+{
+  "annotator": "claude",
+  "questions": 41,
+  "annotated_questions": 20,
+  "questions_with_relevant": 18,
+  "judge_validation": {
+    "answers": 20,
+    "claims": 514,
+    "agreement": 0.9357976653696498,
+    "cohen_kappa": 0.3275985094743519,
+    "human_supported_share": 0.9747081712062257,
+    "judge_supported_share": 0.9260700389105059,
+    "unsupported_by_reference": 13,
+    "unsupported_by_judge": 38,
+    "unsupported_by_both": 9,
+    "faithfulness_mae": 0.05311216883302716
+  },
+  "label_quality": {
+    "articles": 40,
+    "topic_accuracy": 0.775,
+    "topic_kappa": 0.7209302325581395,
+    "tone_accuracy": 0.85,
+    "tone_kappa": 0.752832131822863
+  },
+  "spend": {
+    "since": "2026-11-08T14:12:29.842457+00:00",
+    "by_purpose": [
+      {
+        "purpose": "embed_query",
+        "model": "text-embedding-3-large",
+        "calls": 217,
+        "input_tokens": 4232,
+        "output_tokens": 0,
+        "cost_usd": 0.0005501600000000002
+      },
+      {
+        "purpose": "generate",
+        "model": "gpt-5.6-terra",
+        "calls": 479,
+        "input_tokens": 1719599,
+        "output_tokens": 139749,
+        "cost_usd": 5.116186000000001
+      },
+      {
+        "purpose": "judge",
+        "model": "gpt-5.6-sol",
+        "calls": 39,
+        "input_tokens": 125097,
+        "output_tokens": 81781,
+        "cost_usd": 2.136008
+      },
+      {
+        "purpose": "router",
+        "model": "gpt-5.6-luna",
+        "calls": 164,
+        "input_tokens": 53065,
+        "output_tokens": 10994,
+        "cost_usd": 0.023805800000000002
+      }
+    ],
+    "total_usd": 7.2765
+  }
+}

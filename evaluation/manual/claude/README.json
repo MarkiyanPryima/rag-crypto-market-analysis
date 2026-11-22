@@ -1,0 +1,27 @@
+{
+  "annotator": "claude-opus-5.5 (Anthropic), independent sub-agents",
+  "date": "2026-11-17",
+  "procedure": "two independent blind annotations (A, B) per item; disagreements decided by a third blind adjudicator. Relevance: both A and B in round 2 with a refined guideline (round 1 kept in raw/ only). Claims and labels: A = round 1, B = round 2.",
+  "blind": "judge verdicts and model labels were never shown",
+  "note": "model-made reference annotation, NOT a human annotation",
+  "stats": {
+    "relevance": {
+      "items": 337,
+      "agreement_A_B": 0.9792,
+      "adjudicated": 7,
+      "relevant": 221
+    },
+    "claims": {
+      "claims": 514,
+      "agreement_A_B": 0.9903,
+      "adjudicated": 5,
+      "unsupported": 13
+    },
+    "labels": {
+      "articles": 40,
+      "topic_agreement_A_B": 0.95,
+      "tone_agreement_A_B": 0.95,
+      "adjudicated": 3
+    }
+  }
+}

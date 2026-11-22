@@ -1,0 +1,530 @@
+[
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699cf109742707706ad2a1eb",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699daee2742707706ad2a294",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699daee2742707706ad2a295",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699db265742707706ad2a29a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e3f05742707706ad2a334",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e4289742707706ad2a338",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e57a3742707706ad2a33d",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e57a3742707706ad2a33e",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e5b25742707706ad2a341",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699e5b25742707706ad2a342",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699eb309742707706ad2a37e",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699ed9b5742707706ad2a39f",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f0062742707706ad2a3d7",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f03e5742707706ad2a3e6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f18fd742707706ad2a403",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f432d742707706ad2a43f",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f4dba742707706ad2a44d",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f69d979238a7782d90ea6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f6d5d79238a7782d90eab",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026022522|hf:katelabs:699f827579238a7782d90ec5",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b48c653dd94b3f3f899847",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b5a5a53dd94b3f3f8998dd",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7609d3dd94b3f3f899992",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b767a43dd94b3f3f899993",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b783c53dd94b3f3f89999c",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b78acd3dd94b3f3f89999e",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b78e513dd94b3f3f8999a2",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b795593dd94b3f3f8999a7",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7b8813dd94b3f3f8999b5",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7d8253dd94b3f3f8999d3",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7f0c13dd94b3f3f8999e9",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7fb4d3dd94b3f3f8999fb",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b7fed13dd94b3f3f899a07",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b805d93dd94b3f3f899a14",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b813e93dd94b3f3f899a2a",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b8176d3dd94b3f3f899a2b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b81e753dd94b3f3f899a35",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b821f93dd94b3f3f899a3d",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b848a53dd94b3f3f899a68",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b848a53dd94b3f3f899a6b",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b84c293dd94b3f3f899a6c",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b84c293dd94b3f3f899a6e",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b856b53dd94b3f3f899a7a",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026031619|hf:katelabs:69b85a393dd94b3f3f899a82",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69ca88e958bd31fcc0997223",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69caba2158bd31fcc099727e",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cb3fb958bd31fcc09972f8",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cb666558bd31fcc0997315",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cb747458bd31fcc099731a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cb77f958bd31fcc0997329",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbb3bd58bd31fcc0997375",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbbac558bd31fcc099737a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbbe4958bd31fcc0997385",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbdded58bd31fcc09973bb",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbdded58bd31fcc09973bc",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbe4f558bd31fcc09973c2",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbe4f558bd31fcc09973c8",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbfa0d58bd31fcc09973e1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cbfd9158bd31fcc09973eb",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cc406158bd31fcc0997440",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cc789d58bd31fcc0997469",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cc984158bd31fcc0997478",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69ccd40558bd31fcc09974a5",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69ccfe3558bd31fcc09974c8",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd0c4558bd31fcc09974db",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd0fc958bd31fcc09974e2",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd1a5558bd31fcc09974f5",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd1dd958bd31fcc09974fb",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd286558bd31fcc099750f",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd60a458bd31fcc0997553",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd7cc558bd31fcc0997571",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040120|hf:katelabs:69cd83cd58bd31fcc0997578",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d3ed989bade0309a2b46d5",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d40d3d9bade0309a2b46ff",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d48bcd9bade0309a2b474a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d48bcd9bade0309a2b474b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d4aef59bade0309a2b475b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d4fc4d9bade0309a2b47bf",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d506d99bade0309a2b47dc",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d511659bade0309a2b47e6",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5348d9bade0309a2b481a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d53b959bade0309a2b4821",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d554319bade0309a2b4844",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d557b59bade0309a2b4848",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d557b59bade0309a2b4849",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d55b389bade0309a2b484d",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d565c59bade0309a2b4859",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d57add9bade0309a2b4873",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5889d9bade0309a2b487d",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5cbb99bade0309a2b48ad",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5d9c99bade0309a2b48b2",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d5f96d9bade0309a2b48d1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d600749bade0309a2b48d6",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d603f99bade0309a2b48d7",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d619119bade0309a2b48f3",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d6239c9bade0309a2b48fa",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d6239c9bade0309a2b48fb",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d64dcd9bade0309a2b492a",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d654d59bade0309a2b4936",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d65bdd9bade0309a2b493c",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d65bdd9bade0309a2b4940",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026040813|hf:katelabs:69d662e49bade0309a2b4954",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69da85199bade0309a2b4d09",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69da96ac9bade0309a2b4d12",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69db1c459bade0309a2b4d46",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dc47199bade0309a2b4de1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dc94719bade0309a2b4e04",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dca2809bade0309a2b4e16",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dca6049bade0309a2b4e17",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dcec559bade0309a2b4e5f",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dcf6e19bade0309a2b4e7b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd24959bade0309a2b4eb6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd2b9d9bade0309a2b4ebe",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd4b419bade0309a2b4ee0",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd4ec59bade0309a2b4ee4",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd55cd9bade0309a2b4eed",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd59519bade0309a2b4ef1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd75709bade0309a2b4efe",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd78f49bade0309a2b4f00",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd83819bade0309a2b4f02",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd87059bade0309a2b4f03",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd8a899bade0309a2b4f09",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd95159bade0309a2b4f10",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd95159bade0309a2b4f11",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dda3259bade0309a2b4f17",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddb4b99bade0309a2b4f20",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddbf459bade0309a2b4f24",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddcd559bade0309a2b4f2b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddd45c9bade0309a2b4f32",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dde26d9bade0309a2b4f3b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69de02119bade0309a2b4f56",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69de1aad9bade0309a2b4f67",
+  "relevant": true
+ }
+]

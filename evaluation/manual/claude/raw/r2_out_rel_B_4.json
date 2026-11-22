@@ -1,0 +1,218 @@
+[
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69da85199bade0309a2b4d09",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69da96ac9bade0309a2b4d12",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69db1c459bade0309a2b4d46",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dc47199bade0309a2b4de1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dc94719bade0309a2b4e04",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dca2809bade0309a2b4e16",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dca6049bade0309a2b4e17",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dcec559bade0309a2b4e5f",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dcf6e19bade0309a2b4e7b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd24959bade0309a2b4eb6",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd2b9d9bade0309a2b4ebe",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd4b419bade0309a2b4ee0",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd4ec59bade0309a2b4ee4",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd55cd9bade0309a2b4eed",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd59519bade0309a2b4ef1",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd75709bade0309a2b4efe",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd78f49bade0309a2b4f00",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd83819bade0309a2b4f02",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd87059bade0309a2b4f03",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd8a899bade0309a2b4f09",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd95159bade0309a2b4f10",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dd95159bade0309a2b4f11",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dda3259bade0309a2b4f17",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddb4b99bade0309a2b4f20",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddbf459bade0309a2b4f24",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddcd559bade0309a2b4f2b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69ddd45c9bade0309a2b4f32",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69dde26d9bade0309a2b4f3b",
+  "relevant": true
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69de02119bade0309a2b4f56",
+  "relevant": false
+ },
+ {
+  "item_id": "eth-2026041409|hf:katelabs:69de1aad9bade0309a2b4f67",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:business/2026/10/29/potential-multi-billion-binance-hack-hitting-crypto-markets",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:business/2026/10/29/switzerland-s-first-bitcoin-etf-gets-rare-exemption-will-open-to-overseas-brokers",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:daybook-us/2026/10/29/as-usd10-billion-in-bitcoin-options-near-expiry-the-tell-is-in-the-pricing",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:daybook-us/2026/10/30/here-s-how-big-bitcoin-traders-responded-after-the-binance-hack-hit",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/28/bitcoin-treasury-datavault-ai-plunges-50-after-firm-says-it-can-t-access-its-btc",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/29/bitcoin-dips-below-usd80-000-as-samsung-led-risk-aversion-in-tech-and-a-hawkish-fed-weigh-on-crypto",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/29/bitcoin-drops-to-usd80-000-on-fed-dissent-samsung-alphabet-earnings-ai-tokens-slump",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/29/the-chart-bitcoin-traders-should-be-paying-attention-to",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/30/binance-hacker-splits-usd1-4-billion-of-bitcoin-into-19-wallets-that-no-one-can-freeze",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/30/bitcoin-ether-and-xrp-selloff-wipes-out-usd1-5-billion-in-leveraged-crypto-bets",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/30/crypto-liquidations-jump-to-usd1-57-billion-as-binance-hack-sends-bitcoin-ether-lower",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/30/strategy-cfo-resigns-as-company-posts-record-quarterly-profit-mstr-stock-falls-6",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026103019|coindesk:markets/2026/10/30/usd6-billion-binance-hack-sends-bitcoin-ether-tumbling-standard-chartered-sees-more-losses-ahead",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|guardian:business/2026/oct/29/binance-crypto-exchange-hack",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026103019|guardian:business/2026/oct/30/crypto-heist-binance-who-did-it-are-investments-safe",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:daybook-us/2026/10/19/strategy-on-verge-of-golden-cross-just-weeks-after-bitcoin-flashed-same-bullish-signal",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/18/bitcoin-s-usd100-000-year-end-hope-divides-analysts-as-inflation-clouds-outlook",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/18/wall-street-freaked-out-friday-vix-and-bitcoin-say-it-may-not-last",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/19/bitcoin-extends-bounce-above-usd82-000-as-stocks-rebound-defi-tokens-lead-altcoin-gains",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/19/bitcoin-korea-s-kospi-and-nasdaq-futures-rally-as-china-gdp-beats-estimates",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/19/bitcoin-whale-moves-usd34-million-in-btc-it-got-in-2013-when-coins-traded-at-usd131",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/19/cme-s-bitcoin-cash-uniswap-futures-global-pmis-crypto-week-ahead",
+  "relevant": false
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:markets/2026/10/19/live-updates-bitcoin-tags-usd83-000-and-slips-back-as-chip-stocks-lead-a-rebound",
+  "relevant": true
+ },
+ {
+  "item_id": "btc-2026101915|coindesk:tech/2026/10/19/bitcoin-mining-offshoot-nscale-loses-microsoft-ai-deal-as-power-delay-stretches-into-2030s",
+  "relevant": false
+ }
+]

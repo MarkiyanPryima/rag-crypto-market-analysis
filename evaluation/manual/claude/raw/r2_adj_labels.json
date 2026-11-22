@@ -1,0 +1,5 @@
+[
+  {"item_id": "coindesk:markets/2026/11/03/liquid-s-bitcoin-ious-are-fully-backed-again-after-a-usd320-million-exploit", "topic": "hacks_and_failures", "tone": "positive", "reason": "The story is the aftermath of a $320M exploit, and the headline news is that the hole is closed and the IOUs are fully backed again; the open question of who paid is a secondary caveat."},
+  {"item_id": "coindesk:policy/2026/11/03/what-voters-said-about-their-views-on-crypto", "topic": "regulation", "tone": "neutral", "reason": "An election-day policy piece about voter attitudes toward crypto is political/policy coverage, the closest defined category, and it reports poll findings with no clear directional stance."},
+  {"item_id": "guardian:sport/2022/nov/15/afl-stands-by-cryptocom-partnership-amid-fears-of-a-cryptocurrency-meltdown", "topic": "hacks_and_failures", "tone": "negative", "reason": "The story is driven by the FTX bankruptcy and contagion fears for Crypto.com (headline 'fears of a cryptocurrency meltdown', body detailing the collapse), so the dominant theme is a failure and the overall stance is negative even though the AFL keeps the deal."}
+]

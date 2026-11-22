@@ -126,6 +126,46 @@ export interface Health {
   guardian_configured: boolean
 }
 
+export type AnnotationTask = 'relevance' | 'claims' | 'labels'
+
+export interface AnnotationItem<P = Record<string, unknown>, L = Record<string, unknown>> {
+  item_id: string
+  payload: P
+  label: L | null
+}
+
+export interface ArticleRef {
+  id: string
+  source: string
+  channel?: string
+  title: string
+  standfirst: string
+  body: string
+  url: string
+  published_at: string
+}
+
+export interface RelevancePayload {
+  question_id: string
+  question: string
+  asset: Asset
+  move_pct: number
+  window_start: string
+  window_end: string
+  article: ArticleRef
+}
+
+export interface ClaimsPayload {
+  question_id: string
+  question: string
+  as_of: string
+  answer: string
+  context: string
+  claims: string[]
+}
+
+export type LabelsPayload = Omit<ArticleRef, 'id' | 'channel'>
+
 export class ApiError extends Error {
   status: number
   constructor(status: number, message: string) {
@@ -178,4 +218,11 @@ export const api = {
     request<Candle[]>(`/prices?${qs({ asset, start, as_of: asOf })}`),
   news: (start: string, asOf: string, asset?: Asset) =>
     request<NewsItem[]>(`/news?${qs({ start, as_of: asOf, asset, limit: '100' })}`),
+  annotationProgress: () => request<Record<string, { total: number; done: number }>>('/annotations'),
+  annotations: <P, L>(task: AnnotationTask) => request<AnnotationItem<P, L>[]>(`/annotations/${task}`),
+  saveAnnotation: (task: AnnotationTask, itemId: string, label: Record<string, unknown>) =>
+    request<{ item_id: string }>(`/annotations/${task}/${itemId.split('/').map(encodeURIComponent).join('/')}`, {
+      method: 'PUT',
+      body: JSON.stringify({ label }),
+    }),
 }

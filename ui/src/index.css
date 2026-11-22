@@ -18,6 +18,7 @@
   --s1: #2a78d6;   /* series 1: price, primary */
   --s2: #eb6834;   /* series 2: cited sources */
   --s3: #1baf7a;   /* series 3 */
+  --s4: #7a6ff0;   /* series 4 */
   --marker: #b9bcc2;
   --accent: #2a78d6;
   --accent-soft: #e6effb;
@@ -52,6 +53,8 @@
     --s1: #3987e5;
     --s2: #d95926;
     --s3: #199e70;
+  --s4: #8b80f5;
+    --s4: #8b80f5;
     --marker: #55554f;
     --accent: #3987e5;
     --accent-soft: #1b2a40;
@@ -306,4 +309,23 @@ td:first-child code { white-space: nowrap; word-break: normal; }
   .hero { padding: 20px 16px; }
   .hero h1 { font-size: 21px; }
   .controls .grow { flex-basis: 100%; }
+}
+
+/* --- Annotation screen ---------------------------------------------------- */
+.annot-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 10px 0; border-top: 1px solid var(--border); }
+.annot-text { min-width: 0; flex: 1; }
+.annot-text a { color: var(--text); font-weight: 550; text-decoration: none; }
+.annot-text a:hover { color: var(--accent); }
+.annot-snippet { color: var(--text-2); margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.annot-pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.annot-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.annot-cols h4, .card h4 { margin: 12px 0 6px; font-size: 13px; font-weight: 650; color: var(--text-2); }
+.annot-pre { white-space: pre-wrap; font-size: 13px; line-height: 1.5; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.annot-context { max-height: 420px; overflow: auto; font-size: 12px; }
+.annot-choices { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.chip:disabled { opacity: .45; cursor: default; }
+@media (max-width: 760px) {
+  .annot-cols { grid-template-columns: 1fr; }
+  .annot-row { flex-direction: column; gap: 8px; }
 }

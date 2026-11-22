@@ -125,3 +125,37 @@ def test_stats_numbers_are_json_numbers(client, engine):
         )
     usage = client.get("/stats").json()["llm_usage"]
     assert all(isinstance(u["cost_usd"], float) for u in usage if u["cost_usd"] is not None)
+
+
+@pytest.mark.integration
+def test_annotation_hides_model_outputs_and_validates_labels(engine, client):
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM annotations"))
+        conn.execute(text(
+            "INSERT INTO annotations (task, item_id, payload) VALUES "
+            "('claims', 'q1|full', '{\"claims\": [\"a\", \"b\"], \"_judge_supported\": [true, false]}'),"
+            "('labels', 'guardian:x', '{\"title\": \"T\", \"_model_topic\": \"macro\"}')"
+        ))  # fmt: skip
+    items = client.get("/annotations/claims").json()
+    assert items == [{"item_id": "q1|full", "payload": {"claims": ["a", "b"]}, "label": None}]
+    assert (
+        client.put("/annotations/claims/q1|full", json={"label": {"supported": [True]}}).status_code
+        == 422
+    )
+    assert (
+        client.put(
+            "/annotations/claims/q1|full", json={"label": {"supported": [True, False]}}
+        ).status_code
+        == 200
+    )
+    assert (
+        client.put(
+            "/annotations/labels/guardian:x", json={"label": {"topic": "macro", "tone": "bad"}}
+        ).status_code
+        == 422
+    )
+    assert client.put("/annotations/labels/nope", json={"label": {}}).status_code == 404
+    assert client.get("/annotations").json() == {
+        "claims": {"total": 1, "done": 1},
+        "labels": {"total": 1, "done": 0},
+    }

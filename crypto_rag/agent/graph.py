@@ -12,10 +12,11 @@ and clamps any model-supplied end time to it.
 
 import json
 import logging
+import math
 import re
 import time
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any, Literal
 
@@ -29,9 +30,12 @@ from crypto_rag.agent.prompts import (
     DISCLAIMER,
     FORECAST_HINT,
     GENERATOR_PROMPT,
+    NEWS_ONLY_HINT,
     NO_FORECAST_HINT,
+    NO_TOOLS_PROMPT,
     RETRY_PROMPT,
     ROUTER_PROMPT,
+    TOOL_HINT,
 )
 from crypto_rag.agent.state import AgentState, RouterOut
 from crypto_rag.db.models import QueryLog
@@ -115,12 +119,31 @@ def _tool_spec(name: str, schema: type[BaseModel]) -> dict[str, Any]:
     }
 
 
-def tools_for_intent(intent: str) -> list[dict[str, Any]]:
+def tools_for_intent(intent: str, only: frozenset[str] | None = None) -> list[dict[str, Any]]:
     return [
         _tool_spec(n, s)
         for n, s in TOOL_SCHEMAS.items()
-        if n != "get_forecast" or intent in ("forecast", "mixed")
+        if (n != "get_forecast" or intent in ("forecast", "mixed")) and (only is None or n in only)
     ]
+
+
+@dataclass(frozen=True)
+class RunConfig:
+    """Ablation switches for the evaluation (stage 17). The defaults are the full system."""
+
+    name: str = "full"
+    tools: frozenset[str] | None = None  # None: every tool allowed for the intent
+    verify: bool = True
+    half_life_hours: float | None = None  # None: settings; math.inf: no recency decay
+
+
+NEWS_TOOLS = frozenset({"search_news", "news_around_move"})
+CONFIGS = {
+    "no_retrieval": RunConfig("no_retrieval", frozenset(), verify=False, half_life_hours=math.inf),
+    "news_only": RunConfig("news_only", NEWS_TOOLS, verify=False, half_life_hours=math.inf),
+    "news_tools": RunConfig("news_tools", None, verify=False, half_life_hours=math.inf),
+    "full": RunConfig(),
+}
 
 
 # --- Tool execution ----------------------------------------------------------
@@ -144,6 +167,7 @@ class ToolExecutor:
     ids: IdAllocator
     embed_query: QueryEmbedder | None = None
     locked_asset: bool = False
+    half_life_hours: float | None = None
 
     def _asset(self, requested: str | None) -> str:
         return self.default_asset if self.locked_asset or not requested else requested
@@ -178,6 +202,7 @@ class ToolExecutor:
                 asset,
                 args.window_hours,
                 embed_query=self.embed_query,
+                half_life_hours=self.half_life_hours,
                 ids=self.ids,
             )
             result = [h.to_dict() for h in hits]
@@ -209,6 +234,7 @@ class AgentDeps:
     embed_query: QueryEmbedder | None = None
     router_model_name: str = "router"
     generator_model_name: str = "generator"
+    config: RunConfig = field(default_factory=RunConfig)
 
 
 def _log_llm(deps: AgentDeps, purpose: str, model: str, message: Any) -> None:
@@ -272,7 +298,8 @@ def build_graph(deps: AgentDeps) -> Any:
     def generate(state: AgentState) -> dict[str, Any]:
         ids = IdAllocator()
         ids._counters = dict(state.get("id_counters", {}))
-        tools = tools_for_intent(state["intent"])
+        cfg = deps.config
+        tools = tools_for_intent(state["intent"], cfg.tools)
         executor = ToolExecutor(
             deps.engine,
             state["as_of"],
@@ -281,13 +308,16 @@ def build_graph(deps: AgentDeps) -> Any:
             ids,
             deps.embed_query,
             locked_asset=bool(state.get("asset_locked")),
+            half_life_hours=cfg.half_life_hours,
         )
-        system = GENERATOR_PROMPT.format(
+        prompt = GENERATOR_PROMPT if tools else NO_TOOLS_PROMPT
+        system = prompt.format(
             as_of=f"{state['as_of']:%Y-%m-%d %H:%M}",
             asset=state["asset"],
             intent=state["intent"],
             window_hours=state["window_hours"],
             disclaimer=DISCLAIMER,
+            tool_hint=NEWS_ONLY_HINT if cfg.tools == NEWS_TOOLS else TOOL_HINT,
             forecast_hint=FORECAST_HINT
             if state["intent"] in ("forecast", "mixed")
             else NO_FORECAST_HINT,
@@ -305,7 +335,7 @@ def build_graph(deps: AgentDeps) -> Any:
                     )
                 )
             )
-        llm = deps.generator_llm.bind_tools(tools)
+        llm = deps.generator_llm.bind_tools(tools) if tools else deps.generator_llm
         tool_results = {k: list(v) for k, v in state.get("tool_results", {}).items()}
         tool_calls = list(state.get("tool_calls", []))
         draft = ""
@@ -363,6 +393,13 @@ def build_graph(deps: AgentDeps) -> Any:
             update["answer"] = answer
         return update
 
+    def finish(state: AgentState) -> dict[str, Any]:
+        """Configurations without verification return the draft as is."""
+        answer = state.get("draft_answer", "").rstrip()
+        if DISCLAIMER not in answer:
+            answer += f"\n\n{DISCLAIMER}"
+        return {"answer": answer, "trace": _trace(state, "finish", verified=False)}
+
     def refuse(state: AgentState) -> dict[str, Any]:
         ukrainian = bool(re.search(r"[А-Яа-яІіЇїЄєҐґ]", state.get("question", "")))
         feedback = state.get("verification", {}).get("feedback", "")
@@ -387,9 +424,11 @@ def build_graph(deps: AgentDeps) -> Any:
     g.add_node("generate", generate)
     g.add_node("verify", verify_node)
     g.add_node("refuse", refuse)
+    g.add_node("finish", finish)
     g.add_edge(START, "router")
     g.add_conditional_edges("router", after_router, ["refuse", "generate"])
-    g.add_edge("generate", "verify")
+    g.add_edge("generate", "verify" if deps.config.verify else "finish")
+    g.add_edge("finish", END)
     g.add_conditional_edges("verify", after_verify, [END, "generate", "refuse"])
     g.add_edge("refuse", END)
     return g.compile()
@@ -450,7 +489,7 @@ def run_query(
     return {**state, "query_id": query_id}
 
 
-def default_deps(engine: Engine) -> AgentDeps:
+def default_deps(engine: Engine, config: RunConfig | None = None) -> AgentDeps:
     from langchain_openai import ChatOpenAI
 
     from crypto_rag.config import get_settings
@@ -474,5 +513,11 @@ def default_deps(engine: Engine) -> AgentDeps:
         use_responses_api=True,
     )
     return AgentDeps(
-        engine, router, generator, openai_query_embedder(engine), s.router_model, s.generator_model
+        engine,
+        router,
+        generator,
+        openai_query_embedder(engine),
+        s.router_model,
+        s.generator_model,
+        config or RunConfig(),
     )

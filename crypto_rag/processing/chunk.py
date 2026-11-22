@@ -2,7 +2,7 @@
 
 Every chunk starts with "[title] — [published_at, UTC]" so a chunk retrieved
 on its own still says what it belongs to and when it was published.
-Articles without body text (CoinDesk RSS/GDELT) become one chunk:
+Articles without body text (CoinDesk RSS, short dataset headlines) become one chunk:
 header + standfirst.
 """
 
@@ -92,25 +92,42 @@ def articles_needing_chunks(session: Session, limit: int | None = None) -> list[
     return list(session.scalars(stmt))
 
 
+BATCH = 2000
+
+
 def chunk_pending(engine: Engine, limit: int | None = None) -> int:
-    """(Re)chunk new or changed articles. Embeddings are filled in by embed.py."""
+    """(Re)chunk new or changed articles in committed batches. Embeddings come from embed.py.
+
+    Every article yields at least one chunk, so a processed article is never selected again.
+    """
+    created = processed = 0
+    while limit is None or processed < limit:
+        size = BATCH if limit is None else min(BATCH, limit - processed)
+        with Session(engine) as session:
+            articles = articles_needing_chunks(session, size)
+            if not articles:
+                break
+            created += _chunk_batch(session, articles)
+            session.commit()
+        processed += len(articles)
+        logger.info("chunked %d articles so far (%d chunks)", processed, created)
+    return created
+
+
+def _chunk_batch(session: Session, articles: list[Article]) -> int:
     created = 0
-    with Session(engine) as session:
-        articles = articles_needing_chunks(session, limit)
-        for article in articles:
-            session.execute(delete(Chunk).where(Chunk.article_id == article.id))
-            for draft in build_chunks(article):
-                session.add(
-                    Chunk(
-                        article_id=article.id,
-                        chunk_index=draft.index,
-                        text=draft.text,
-                        published_at=article.published_at,
-                        assets=draft.assets,
-                        content_hash=article.content_hash or "",
-                    )
+    session.execute(delete(Chunk).where(Chunk.article_id.in_([a.id for a in articles])))
+    for article in articles:
+        for draft in build_chunks(article):
+            session.add(
+                Chunk(
+                    article_id=article.id,
+                    chunk_index=draft.index,
+                    text=draft.text,
+                    published_at=article.published_at,
+                    assets=draft.assets,
+                    content_hash=article.content_hash or "",
                 )
-                created += 1
-        session.commit()
-    logger.info("chunked %d articles into %d chunks", len(articles), created)
+            )
+            created += 1
     return created

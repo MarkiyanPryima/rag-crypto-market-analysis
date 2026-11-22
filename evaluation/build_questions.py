@@ -1,30 +1,31 @@
 """Stage 17.1: pick BTC/ETH moves after the model's knowledge cut-off for evaluation.
 
-For each asset, every 24-hour window is scored by its absolute return. Moves are
-picked greedily (largest first) with at least 72 h between picks, so no two
-questions describe the same event. The set mixes large and moderate moves,
-rises and falls.
+The short second window holds fewer non-overlapping moves, hence a per-window maximum.
+Two windows, both after the generator's knowledge cut-off (2026-02-16) and both with
+news coverage beyond The Guardian:
+  * 2026-02-16 .. 2026-04-30 — Hugging Face katelabs headlines;
+  * 2026-10-09 .. now        — CoinDesk RSS.
+For each asset and window, every 24-hour move is scored by its absolute return and
+moves are picked greedily with at least 72 h between picks, half from the largest
+moves and half from moderate ones (10th-50th percentile of |move|), so the set mixes
+large and moderate moves, rises and falls.
 
-For every move the script lists candidate articles (published from 12 h before
-the window to its end) so the author can mark the relevant ones by hand.
+Relevant articles are not listed here: they are marked by hand on the pooled results
+of every configuration (see crypto_rag.evaluation.annotate).
 
-Outputs:
-    evaluation/questions_draft.jsonl   one question per line (relevant_article_ids empty)
-    evaluation/annotate_articles.csv   candidates to mark: relevant = 1 / 0
+Output: evaluation/questions.jsonl (one question per line).
 
 Usage:
-    python evaluation/build_questions.py [--per-asset 25] [--since 2026-02-16]
+    python evaluation/build_questions.py [--per-window 13]
 """
 
 import argparse
-import csv
 import json
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sqlalchemy import text
 
 from crypto_rag.db.session import get_engine
 from crypto_rag.forecasting.features import load_candles_df
@@ -73,66 +74,51 @@ def pick_moves(close: pd.Series, since: pd.Timestamp, n: int) -> list[tuple[pd.T
     return sorted((ts + pd.Timedelta(hours=1), float(ret[ts])) for ts in picked)
 
 
+WINDOWS = [("2026-02-16", "2026-04-30"), ("2026-10-09", None)]
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--per-asset", type=int, default=25)
-    parser.add_argument("--since", default="2026-02-16")
+    parser.add_argument(
+        "--per-window", type=int, default=13, help="max questions per asset and window"
+    )
     args = parser.parse_args()
-    since = pd.Timestamp(args.since, tz="UTC")
     engine = get_engine()
 
-    questions, rows = [], []
+    questions = []
     for asset, symbol in ASSETS.items():
         close = load_candles_df(engine, symbol).close.asfreq("1h")
-        for i, (end, ret_pct) in enumerate(pick_moves(close, since, args.per_asset)):
-            direction = "down" if ret_pct < 0 else "up"
-            start = end - WINDOW
-            as_of = (end + timedelta(hours=2)).to_pydatetime()
-            day = (
-                f"{start:%Y-%m-%d}"
-                if start.date() == end.date()
-                else f"{start:%Y-%m-%d}–{end:%Y-%m-%d}"
+        for since, until in WINDOWS:
+            part = (
+                close[: pd.Timestamp(until, tz="UTC") + pd.Timedelta(hours=23)] if until else close
             )
-            template = TEMPLATES[direction][i % len(TEMPLATES[direction])]
-            qid = f"{asset.lower()}-{end:%Y%m%d%H}"
-            questions.append({
-                "id": qid,
-                "asset": asset,
-                "as_of": as_of.isoformat(),
-                "window_start": start.isoformat(),
-                "window_end": end.isoformat(),
-                "move_pct": round(ret_pct, 2),
-                "question": template.format(asset=asset, day=day),
-                "relevant_article_ids": [],
-            })  # fmt: skip
-            with engine.connect() as conn:
-                cands = conn.execute(
-                    text(
-                        "SELECT DISTINCT a.id, a.source, a.channel, a.published_at, a.title FROM articles a "
-                        "JOIN chunks c ON c.article_id = a.id "
-                        "WHERE a.published_at BETWEEN :f AND :t AND NOT a.is_liveblog "
-                        "AND :asset = ANY(c.assets) ORDER BY a.published_at"
-                    ),
-                    {"f": start - timedelta(hours=12), "t": end, "asset": asset},
-                ).all()
-            for c in cands:
-                rows.append({"question_id": qid, "question": questions[-1]["question"],
-                             "move_pct": round(ret_pct, 2), "article_id": c.id, "source": c.source,
-                             "channel": c.channel, "published_at": c.published_at.astimezone(UTC).isoformat(),
-                             "title": c.title, "relevant": ""})  # fmt: skip
+            moves = pick_moves(part, pd.Timestamp(since, tz="UTC"), args.per_window)
+            for end, ret_pct in moves:
+                i = len(questions)
+                direction = "down" if ret_pct < 0 else "up"
+                start = end - WINDOW
+                day = (
+                    f"{start:%Y-%m-%d}"
+                    if start.date() == end.date()
+                    else f"{start:%Y-%m-%d}–{end:%Y-%m-%d}"
+                )
+                template = TEMPLATES[direction][i % len(TEMPLATES[direction])]
+                questions.append({
+                    "id": f"{asset.lower()}-{end:%Y%m%d%H}",
+                    "asset": asset,
+                    "window": since,
+                    "as_of": (end + timedelta(hours=2)).isoformat(),
+                    "window_start": start.isoformat(),
+                    "window_end": end.isoformat(),
+                    "move_pct": round(ret_pct, 2),
+                    "question": template.format(asset=asset, day=day),
+                })  # fmt: skip
 
-    (OUT / "questions_draft.jsonl").write_text(
+    questions.sort(key=lambda q: q["window_end"])
+    (OUT / "questions.jsonl").write_text(
         "".join(json.dumps(q, ensure_ascii=False) + "\n" for q in questions)
     )
-    with (OUT / "annotate_articles.csv").open("w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=list(rows[0]) if rows else ["question_id"])
-        w.writeheader()
-        w.writerows(rows)
-    no_news = sum(1 for q in questions if not any(r["question_id"] == q["id"] for r in rows))
-    print(
-        f"{len(questions)} questions, {len(rows)} candidate articles, {no_news} questions with no candidates"
-    )
-    print(f"generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC -> {OUT}")
+    print(f"{len(questions)} questions; generated {datetime.now(UTC):%Y-%m-%d %H:%M} UTC -> {OUT}")
 
 
 if __name__ == "__main__":

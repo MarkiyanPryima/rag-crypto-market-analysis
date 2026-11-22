@@ -3,8 +3,11 @@
 Features for day D use only information available at D 00:00 UTC:
   * candles that CLOSED by D 00:00 (open time <= D - 1h),
   * funding prints with ts <= D 00:00,
-  * articles published before D 00:00 (GDELT rows use the seen-time, which
-    is never earlier than the true publication, so it cannot leak).
+  * articles published before D 00:00.
+News features come only from the sources in settings.feature_news_sources (The
+Guardian by default): it is the one source with the same coverage in the training,
+tuning and test periods, so a "with news / without news" comparison is not skewed by
+a source that appears or disappears between periods.
 Targets look forward and are stored in a separate table.
 
 Usage:
@@ -73,9 +76,10 @@ def load_news_df(engine: Engine) -> pd.DataFrame:
                 "SELECT a.published_at, a.title, coalesce(a.standfirst, '') AS standfirst, "
                 "left(coalesce(a.body_text, ''), 2000) AS body, l.topic, l.tone "
                 "FROM articles a LEFT JOIN article_labels l ON l.article_id = a.id "
-                "WHERE NOT a.is_liveblog"
+                "WHERE NOT a.is_liveblog AND a.source = ANY(:sources)"
             ),
             conn,
+            params={"sources": get_settings().feature_news_sources},
         )
     df["published_at"] = pd.to_datetime(df["published_at"], utc=True)
     df["assets"] = (df.title + " " + df.standfirst + " " + df.body).map(detect_assets)

@@ -5,7 +5,8 @@ RAG-архітектури».
 
 Гібридна RAG-система для BTC і ETH, яка:
 
-1. **пояснює рухи ціни**, поєднуючи новини (The Guardian, CoinDesk) з ринковими даними Binance;
+1. **пояснює рухи ціни**, поєднуючи новини (The Guardian, CoinDesk, історичні набори
+   Hugging Face) з ринковими даними Binance;
 2. **показує схожі епізоди** з історії (48-годинні вікна з найближчою формою ціни);
 3. **щодня прогнозує** волатильність на добу та ймовірність зростання за 7 днів.
 
@@ -22,7 +23,7 @@ RAG-архітектури».
 Binance ─┐                         ┌─ get_market_stats ─┐
 Guardian ├─> PostgreSQL ─> chunks ─┼─ search_news ──────┼─> LangGraph ─> verify ─> відповідь
 CoinDesk │   TimescaleDB   + vec   ├─ similar_episodes ─┤   router →            (або чесна
-GDELT  ──┘   + pgvector    + tsv   └─ get_forecast ─────┘   generate            відмова)
+HF     ──┘   + pgvector    + tsv   └─ get_forecast ─────┘   generate            відмова)
 ```
 
 | Процес | Що робить |
@@ -61,7 +62,7 @@ make up
 docker compose run --rm collector python -m crypto_rag.ingestion.binance backfill
 docker compose run --rm collector python -m crypto_rag.ingestion.guardian backfill
 docker compose run --rm collector python -m crypto_rag.ingestion.coindesk_rss once
-docker compose run --rm collector python -m crypto_rag.ingestion.gdelt api --days 90
+docker compose run --rm collector python -m crypto_rag.ingestion.huggingface import
 ```
 
 **4. Обробити статті й побудувати похідні таблиці**
@@ -74,9 +75,39 @@ docker compose run --rm collector python -m crypto_rag.forecasting.features buil
 
 `pipeline` робить фрагменти, embeddings (`text-embedding-3-large`, 1536) і мітки
 теми/тону (`gpt-5.6-luna`). Це платні виклики OpenAI; витрати пишуться в таблицю
-`llm_usage` і видно на екрані «Статистика». Для ≈800 статей — близько $0.20.
+`llm_usage` і видно на екрані «Статистика». Статті з наборів Hugging Face отримують
+лише embeddings (`LABEL_HF_ARTICLES=false`): ознаки прогнозу беруть новини тільки з
+The Guardian.
 
-**5. Увімкнути автоматичну обробку нових статей** — `LLM_PROCESSING_ENABLED=true`
+**5. Прогнозні моделі** (етап 13): оцінювання на підсумковому періоді (2025-01 → кінець
+даних) і щоденні прогнози ковзної перевірки в таблицю `forecasts`:
+
+```bash
+docker compose run --rm collector python -m crypto_rag.forecasting.train evaluate
+```
+
+Результати — у `evaluation/results/forecast_*`. Далі `forecaster` щодня о 00:05 UTC
+навчає моделі на даних, відомих на цей момент, і записує прогноз на день.
+
+**6. Оцінювання пояснень** (етап 17, платні виклики, ≈$10 за повний прогін):
+
+```bash
+uv run python evaluation/build_questions.py              # evaluation/questions.jsonl
+uv run python -m crypto_rag.evaluation.runs answers      # 4 конфігурації × запитання
+uv run python -m crypto_rag.evaluation.runs retrieval    # пошук за різних T½
+uv run python -m crypto_rag.evaluation.judge             # faithfulness, суддя gpt-5.6-sol
+uv run python -m crypto_rag.evaluation.annotate build    # завдання для ручної розмітки
+```
+
+Ручна розмітка — вкладка «Розмітка» в UI (релевантність статей, перевірка тверджень
+судді, тема й тон). Після неї:
+
+```bash
+uv run python -m crypto_rag.evaluation.annotate export   # мітки -> evaluation/manual/
+uv run python -m crypto_rag.evaluation.report            # таблиці й графіки -> evaluation/results/
+```
+
+**7. Увімкнути автоматичну обробку нових статей** — `LLM_PROCESSING_ENABLED=true`
 у `.env`, потім:
 
 ```bash
@@ -91,19 +122,20 @@ docker compose up -d --force-recreate collector
 crypto_rag/
   config.py          налаштування (pydantic-settings, читає .env)
   db/                моделі SQLAlchemy, сесії
-  ingestion/         binance, guardian, coindesk_rss, gdelt
+  ingestion/         binance, guardian, coindesk_rss, huggingface
   processing/        очищення, фрагменти, активи, embeddings, розмітка
   tools/             числові інструменти: market, news_reaction, episodes, forecast
   retrieval/         гібридний пошук новин (вектор + повнотекстовий, RRF, затухання)
   agent/             граф LangGraph, промпти, стан
   verification/      перевірка відповіді без мовної моделі
-  forecasting/       ознаки, цілі, моделі прогнозу
+  forecasting/       ознаки, цілі, LightGBM, GARCH, перевірка на історії
+  evaluation/        прогони конфігурацій, суддя, метрики, ручна розмітка
   api/               FastAPI
   scheduler/         процеси APScheduler (collector, forecaster)
 migrations/          міграції Alembic
 ui/                  React + Vite + TypeScript
 tests/               pytest (модульні та інтеграційні)
-evaluation/          набори запитань і результати експериментів
+evaluation/          запитання, результати експериментів, ручні мітки
 ```
 
 ## Розробка
@@ -121,8 +153,10 @@ make psql               # консоль бази
 
 ## Відомі обмеження
 
-- **Час GDELT** — це момент, коли GDELT побачив статтю, а не публікація; позначено
-  в `raw.time_source`. Покриття CoinDesk через DOC API неповне.
+- **Покриття новин:** до 01.2025 — набір `maryamfakhari/crypto-news-coindesk-2020-2025`,
+  02–04.2026 — `katelabs/crypto-news-scored` (обидва CC BY-NC 4.0, лише BTC/ETH),
+  з 10.2026 — RSS CoinDesk; The Guardian — увесь період. Для 02.2025–01.2026 і
+  05–09.2026 є лише The Guardian. Набір katelabs містить тільки заголовки.
 - **CoinDesk RSS** не містить повних текстів: такі статті — один фрагмент
   «заголовок + опис». Матеріали з автором «AI Boost» позначено `ai_assisted`.
 - **Мережа:** деякі мережі блокують `fapi.binance.com` (funding) і `coindesk.com`;

@@ -1,0 +1,53 @@
+{
+  "generated_at": "2026-11-08T14:26:30.572244+00:00",
+  "git_commit": "1c234ed7b30f8a052bed9371544bedd3364d2233",
+  "questions_sha256": "a2c91b29246a9aedd1456c5f0bac68523acf50dc1d36975fafb3ec63d37a8f53",
+  "models": {
+    "router": "gpt-5.6-luna",
+    "generator": "gpt-5.6-terra",
+    "judge": "gpt-5.6-sol",
+    "embedding": "text-embedding-3-large",
+    "embedding_dimensions": 1536
+  },
+  "retrieval": {
+    "decay_half_life_hours": 48.0,
+    "rrf_k": 60,
+    "candidates": 50,
+    "top_k": 6,
+    "max_chunks_per_article": 2
+  },
+  "configs": {
+    "no_retrieval": {
+      "tools": [],
+      "verify": false,
+      "half_life_hours": "inf"
+    },
+    "news_only": {
+      "tools": [
+        "news_around_move",
+        "search_news"
+      ],
+      "verify": false,
+      "half_life_hours": "inf"
+    },
+    "news_tools": {
+      "tools": "all",
+      "verify": false,
+      "half_life_hours": "inf"
+    },
+    "full": {
+      "tools": "all",
+      "verify": true,
+      "half_life_hours": 48.0
+    }
+  },
+  "seed": 42,
+  "packages": {
+    "langchain-core": "1.6.12",
+    "langchain-openai": "1.7.2",
+    "langgraph": "1.2.16",
+    "openai": "3.36.0",
+    "pgvector": "0.5.1",
+    "lightgbm": "4.7.0"
+  }
+}

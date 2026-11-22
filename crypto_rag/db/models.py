@@ -85,8 +85,9 @@ class FundingRate(Base):
 class Article(Base):
     __tablename__ = "articles"
     __table_args__ = (
-        CheckConstraint(_in("source", ("guardian", "coindesk")), name="articles_source_check"),
-        CheckConstraint(_in("channel", ("api", "rss", "gdelt")), name="articles_channel_check"),
+        # source = publisher short name (guardian, coindesk, decrypt, …); channel = how it arrived.
+        CheckConstraint("source <> ''", name="articles_source_check"),
+        CheckConstraint(_in("channel", ("api", "rss", "hf")), name="articles_channel_check"),
         Index("ix_articles_published_at", "published_at"),
     )
 
@@ -220,6 +221,25 @@ class QueryLog(Base):
     answer: Mapped[str | None] = mapped_column(Text)
     verification: Mapped[dict[str, Any]] = mapped_column(server_default="{}")
     trace: Mapped[dict[str, Any]] = mapped_column(server_default="{}")
+    created_at: Mapped[datetime] = mapped_column(server_default=func.now())
+
+
+ANNOTATION_TASKS = ("relevance", "claims", "labels")
+
+
+class Annotation(Base):
+    """An item the author judges by hand (stage 17); `label` is NULL until then."""
+
+    __tablename__ = "annotations"
+    __table_args__ = (
+        CheckConstraint(_in("task", ANNOTATION_TASKS), name="annotations_task_check"),
+    )
+
+    task: Mapped[str] = mapped_column(Text, primary_key=True)
+    item_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    payload: Mapped[dict[str, Any]]
+    label: Mapped[dict[str, Any] | None]
+    labelled_at: Mapped[datetime | None]
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
 

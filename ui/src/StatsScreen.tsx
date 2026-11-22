@@ -13,12 +13,13 @@ const TOPIC_UA: Record<string, string> = {
   market: 'Ринок',
   other: 'Інше',
 }
-// Validated categorical slots 1-3; series keep their slot whatever the filter.
-const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)']
+// Validated categorical slots 1-4; series keep their slot whatever the filter.
+const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)', 'var(--s4)']
 const SOURCE_LABEL: Record<string, string> = {
   'guardian (api)': 'The Guardian',
   'coindesk (rss)': 'CoinDesk RSS',
-  'coindesk (gdelt)': 'CoinDesk через GDELT',
+  'maryamfakhari/crypto-news-coindesk-2020-2025 (hf)': 'Hugging Face: maryamfakhari',
+  'katelabs/crypto-news-scored (hf)': 'Hugging Face: katelabs',
 }
 
 function Tip({ active, payload, label, unit = '' }: { active?: boolean; payload?: Array<{ name: string; value: number; color?: string }>; label?: string; unit?: string }) {
@@ -141,7 +142,8 @@ export function StatsScreen() {
             <BarChart data={months} margin={{ right: 8 }}>
               <CartesianGrid stroke="var(--grid)" vertical={false} />
               <XAxis dataKey="month" stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} minTickGap={16} />
-              <YAxis stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} width={36} />
+              <YAxis stroke="var(--muted)" fontSize={11} tickLine={false} axisLine={false} width={52}
+                     tickFormatter={(v: number) => v.toLocaleString("uk-UA")} />
               <Tooltip content={<Tip />} cursor={{ fill: 'var(--surface-2)' }} />
               {keys.map((k, i) => (
                 <Bar key={k} dataKey={k} name={SOURCE_LABEL[k] ?? k} stackId="a" fill={SERIES[i % SERIES.length]}
